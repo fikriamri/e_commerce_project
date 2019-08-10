@@ -16,9 +16,9 @@ class ProductCategoryResource(Resource):
     # @jwt_required
     # @internal_required
     # def get(self, id): # get by id
-    #     qry = Books.query.get(id)
+    #     qry = ProductCategory.query.get(id)
     #     if qry is not None:
-    #         return marshal(qry, Books.response_fields), 200, {'Content-Type': 'application/json'}
+    #         return marshal(qry, ProductCategory.response_fields), 200, {'Content-Type': 'application/json'}
     #     return {'status': 'Book Not Found'}, 404, {'Content-Type': 'application/json'}
 
     # @jwt_required
@@ -71,35 +71,32 @@ class ProductCategoryResource(Resource):
     def patch(self):
         return 'Not yet implemented', 501
 
-# class BookList(Resource):
+class ProductCategoryList(Resource):
 
-#     def __init__(self):
-#         pass
+    def __init__(self):
+        pass
 
-#     @jwt_required
-#     @internal_required
-#     def get(self):
-#         parser = reqparse.RequestParser()
-#         parser.add_argument('p', type=int, location='args', default=1)
-#         parser.add_argument('rp', type=int, location='args', default=25)
-#         parser.add_argument('title', type=str, location='args')
-#         parser.add_argument('isbn', type=str, location='args')
-#         args = parser.parse_args()
+    # @jwt_required
+    # @internal_required
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('p', type=int, location='args', default=1)
+        parser.add_argument('rp', type=int, location='args', default=25)
+        parser.add_argument('category_name', type=str, location='args')
+        args = parser.parse_args()
 
-#         offset = (args['p'] * args['rp']) - args['rp']
+        offset = (args['p'] * args['rp']) - args['rp']
 
-#         qry = Books.query
+        qry = ProductCategory.query
 
-#         if args['title'] is not None:
-#             qry = qry.filter_by(title=args['title'])
-#         if args['isbn'] is not None:
-#             qry = qry.filter_by(isbn=args['isbn'])    
+        if args['category_name'] is not None:
+            qry = qry.filter_by(category_name=args['category_name'])  
 
-#         rows = []
-#         for row in qry.limit(args['rp']).offset(offset).all():
-#             rows.append(marshal(row, Books.response_fields))
-#         return rows, 200, {'Content-Type': 'application/json'}
+        rows = []
+        for row in qry.limit(args['rp']).offset(offset).all():
+            rows.append(marshal(row, ProductCategory.response_fields))
+        return rows, 200, {'Content-Type': 'application/json'}
 
-# api.add_resource(BookList, '')
+api.add_resource(ProductCategoryList, '')
 api.add_resource(ProductCategoryResource, '', '/<id>')
 
