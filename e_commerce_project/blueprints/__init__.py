@@ -90,7 +90,7 @@ from blueprints.product_category.resources import bp_product_category
 # app.register_blueprint(bp_auth, url_prefix='/login')
 # app.register_blueprint(bp_penerbit, url_prefix='/penerbit')
 # app.register_blueprint(bp_book, url_prefix='')
-app.register_blueprint(bp_product_category, url_prefix='/admin')
+app.register_blueprint(bp_product_category, url_prefix='/admin/category')
 
 
 db.create_all()

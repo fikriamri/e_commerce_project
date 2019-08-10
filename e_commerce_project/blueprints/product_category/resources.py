@@ -29,7 +29,7 @@ class ProductCategoryResource(Resource):
         parser.add_argument('description', location='json', required=True)
         data = parser.parse_args()
 
-        product_category = Books(data['category_name'], data['description'])
+        product_category = ProductCategory(data['category_name'], data['description'])
         db.session.add(product_category)
         db.session.commit()
 
@@ -40,23 +40,21 @@ class ProductCategoryResource(Resource):
 
     # @jwt_required
     # @internal_required
-    # def put(self, id):
-    #     parser = reqparse.RequestParser()
-    #     parser.add_argument('title', location='json')
-    #     parser.add_argument('isbn', location='json')
-    #     parser.add_argument('writer', location='json')
-    #     args = parser.parse_args()
+    def put(self, id):
+        parser = reqparse.RequestParser()
+        parser.add_argument('category_name', location='json', required=True)
+        parser.add_argument('description', location='json', required=True)
+        args = parser.parse_args()
 
-    #     qry = Books.query.get(id)
-    #     if qry is None:
-    #         return {'status': 'Book Not Found'}, 404, {'Content-Type': 'application/json'}
+        qry = ProductCategory.query.get(id)
+        if qry is None:
+            return {'status': 'Category Not Found'}, 404, {'Content-Type': 'application/json'}
 
-    #     qry.title = args['title']
-    #     qry.isbn = args['isbn']
-    #     qry.writer = args['writer']
-    #     db.session.commit()
+        qry.category_name = args['category_name']
+        qry.description = args['description']
+        db.session.commit()
 
-    #     return marshal(qry, Books.response_fields), 200, {'Content-Type': 'application/json'}
+        return marshal(qry, ProductCategory.response_fields), 200, {'Content-Type': 'application/json'}
 
     # @jwt_required
     # @internal_required
