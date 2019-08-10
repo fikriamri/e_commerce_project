@@ -15,11 +15,11 @@ class ProductCategoryResource(Resource):
     
     # @jwt_required
     # @internal_required
-    # def get(self, id): # get by id
-    #     qry = ProductCategory.query.get(id)
-    #     if qry is not None:
-    #         return marshal(qry, ProductCategory.response_fields), 200, {'Content-Type': 'application/json'}
-    #     return {'status': 'Book Not Found'}, 404, {'Content-Type': 'application/json'}
+    def get(self, id): # get by id
+        qry = ProductCategory.query.get(id)
+        if qry is not None:
+            return marshal(qry, ProductCategory.response_fields), 200, {'Content-Type': 'application/json'}
+        return {'status': 'Category Not Found'}, 404, {'Content-Type': 'application/json'}
 
     # @jwt_required
     # @internal_required
