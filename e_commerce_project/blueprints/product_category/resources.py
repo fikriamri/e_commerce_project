@@ -58,18 +58,18 @@ class ProductCategoryResource(Resource):
 
     # @jwt_required
     # @internal_required
-    # def delete(self, id):
-    #     qry = Books.query.get(id)
-    #     if qry is None:
-    #         return {'status': 'Book Not Found'}, 404, {'Content-Type': 'application/json'}
+    def delete(self, id):
+        qry = ProductCategory.query.get(id)
+        if qry is None:
+            return {'status': 'Category Not Found'}, 404, {'Content-Type': 'application/json'}
 
-    #     db.session.delete(qry)
-    #     db.session.commit()
+        db.session.delete(qry)
+        db.session.commit()
 
-    #     return {'status': 'Book Deleted'}, 200, {'Content-Type': 'application/json'}
+        return {'status': 'Category Deleted'}, 200, {'Content-Type': 'application/json'}
 
-    # def patch(self):
-    #     return 'Not yet implemented', 501
+    def patch(self):
+        return 'Not yet implemented', 501
 
 # class BookList(Resource):
 
