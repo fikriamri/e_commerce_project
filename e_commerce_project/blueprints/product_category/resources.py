@@ -29,6 +29,10 @@ class ProductCategoryResource(Resource):
         parser.add_argument('description', location='json', required=True)
         data = parser.parse_args()
 
+        qry = ProductCategory.query.filter_by(category_name=data['category_name'])  
+        if qry is not None:
+            return {'status': 'Category_name already existed! Please choose different category_name!'}, 404, {'Content-Type': 'application/json'}
+        
         product_category = ProductCategory(data['category_name'], data['description'])
         db.session.add(product_category)
         db.session.commit()
@@ -36,7 +40,6 @@ class ProductCategoryResource(Resource):
         app.logger.debug('DEBUG : %s', product_category)
 
         return marshal(product_category, ProductCategory.response_fields), 200, {'Content-Type': 'application/json'}
-
 
     # @jwt_required
     # @internal_required
