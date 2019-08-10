@@ -53,6 +53,10 @@ class ProductCategoryResource(Resource):
         if qry is None:
             return {'status': 'Category Not Found'}, 404, {'Content-Type': 'application/json'}
 
+        qry = ProductCategory.query.filter_by(category_name=args['category_name'])  
+        if qry is not None:
+            return {'status': 'Category_name already existed! Please choose different category_name!'}, 404, {'Content-Type': 'application/json'}
+
         qry.category_name = args['category_name']
         qry.description = args['description']
         db.session.commit()
