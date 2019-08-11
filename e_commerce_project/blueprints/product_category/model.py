@@ -1,7 +1,7 @@
 from blueprints import db
 from flask_restful import fields
 
-# BOOKS CLASS
+# PRODUCTCATEGORY CLASS
 class ProductCategory(db.Model):
     __tablename__ = "product_category"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

@@ -82,11 +82,13 @@ def after_request(response):
 from blueprints.clients.resources import bp_client
 from blueprints.auth import bp_auth
 from blueprints.product_category.resources import bp_product_category
+from blueprints.product.resources import bp_product
 
 
 app.register_blueprint(bp_client, url_prefix='/client')
 app.register_blueprint(bp_auth, url_prefix='/login')
 app.register_blueprint(bp_product_category, url_prefix='/admin/category')
+app.register_blueprint(bp_product, url_prefix='/admin/product')
 
 
 db.create_all()
