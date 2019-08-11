@@ -40,7 +40,7 @@ def buyer_required(fn):
         verify_jwt_in_request()
         claims = get_jwt_claims()
         if claims['status']: # If berjalan jika statement True, jadi 'not False' = True
-            return {'status': 'FORBIDDEN', 'message': 'Non-Internal Only'}, 403
+            return {'status': 'FORBIDDEN', 'message': 'Buyer Only'}, 403
         else:
             return fn(*args, **kwargs)
     return wrapper

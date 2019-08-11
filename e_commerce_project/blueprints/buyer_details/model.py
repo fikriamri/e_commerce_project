@@ -12,6 +12,7 @@ class BuyerDetails(db.Model):
     sex = db.Column(db.String(10), nullable=False)
     # email harus unique 
     email = db.Column(db.String(50), unique=True, nullable=False)
+    phone_number = db.Column(db.String(20), nullable=False)
     province = db.Column(db.String(50), nullable=False)
     city = db.Column(db.String(50), nullable=False)
     # sub_district ~ kecamatan
@@ -26,6 +27,7 @@ class BuyerDetails(db.Model):
         'dob': fields.String,
         'sex': fields.String,
         'email': fields.String,
+        'phone_number': fields.String,
         'province': fields.String,
         'city': fields.String,
         'sub_district': fields.String,
@@ -34,11 +36,12 @@ class BuyerDetails(db.Model):
         'client_id': fields.Integer
     }
 
-    def __init__(self, name, dob, sex, email, province, city, sub_district, address, postal_code, client_id):
+    def __init__(self, name, dob, sex, email, phone_number, province, city, sub_district, address, postal_code, client_id):
         self.name = name
         self.dob = dob
         self.sex = sex
         self.email = email
+        self.phone_number = phone_number
         self.province = province
         self.city = city
         self.sub_district = sub_district

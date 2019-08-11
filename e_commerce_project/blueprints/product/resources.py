@@ -29,6 +29,7 @@ class ProductResource(Resource):
         parser.add_argument('product_name', location='json', required=True)
         parser.add_argument('product_category_id', location='json', required=True)
         parser.add_argument('description', location='json', required=True)
+        parser.add_argument('price', location='json', required=True)
         parser.add_argument('image', location='json', required=True)
         parser.add_argument('stock', location='json', required=True)
         data = parser.parse_args()
@@ -42,7 +43,7 @@ class ProductResource(Resource):
         if product_category is None:
             return {'status': 'Product Category Not Found!'}, 404, {'Content-Type': 'application/json'}
         
-        product = Product(data['product_name'], data['product_category_id'], data['description'], data['image'], data['stock'])
+        product = Product(data['product_name'], data['product_category_id'], data['description'], data['price'],data['image'], data['stock'])
         db.session.add(product)
         db.session.commit()
 
@@ -57,6 +58,7 @@ class ProductResource(Resource):
         parser.add_argument('product_name', location='json', required=True)
         parser.add_argument('product_category_id', location='json', required=True)
         parser.add_argument('description', location='json', required=True)
+        parser.add_argument('price', location='json', required=True)
         parser.add_argument('image', location='json', required=True)
         parser.add_argument('stock', location='json', required=True)
         args = parser.parse_args()
@@ -72,6 +74,7 @@ class ProductResource(Resource):
         qry.product_name = args['product_name']
         qry.product_category_id = args['product_category_id']
         qry.description = args['description']
+        qry.price = args['price']
         qry.image = args['image']
         qry.stock = args['stock']
         db.session.commit()
