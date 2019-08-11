@@ -68,18 +68,29 @@ class ProductResource(Resource):
             return {'status': 'Product Not Found'}, 404, {'Content-Type': 'application/json'}
 
         check_qry = Product.query.filter_by(product_name=args['product_name']).first()
+        contain_check_qry = marshal(check_qry, Product.response_fields)
+
         if check_qry is not None:
-            return {'status': 'product_name already existed! Please choose different product_name!'}, 404, {'Content-Type': 'application/json'}
+            if contain_check_qry['id'] == int(id):
+                qry.product_name = args['product_name']
+                qry.product_category_id = args['product_category_id']
+                qry.description = args['description']
+                qry.price = args['price']
+                qry.image = args['image']
+                qry.stock = args['stock']
+                db.session.commit()
+                return marshal(qry, Product.response_fields), 200, {'Content-Type': 'application/json'}
+            else:
+                return {'status': 'product_name already existed! Please choose different product_name!'}, 404, {'Content-Type': 'application/json'}
+        else:
+            qry.product_name = args['product_name']
+            qry.product_category_id = args['product_category_id']
+            qry.description = args['description']
+            qry.price = args['price']
+            qry.image = args['image']
+            qry.stock = args['stock']
+            db.session.commit()
 
-        qry.product_name = args['product_name']
-        qry.product_category_id = args['product_category_id']
-        qry.description = args['description']
-        qry.price = args['price']
-        qry.image = args['image']
-        qry.stock = args['stock']
-        db.session.commit()
-
-        return marshal(qry, Product.response_fields), 200, {'Content-Type': 'application/json'}
 
     @jwt_required
     @internal_required
