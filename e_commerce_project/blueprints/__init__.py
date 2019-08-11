@@ -19,7 +19,7 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=1)
 
 jwt = JWTManager(app)
 
-Perlu diedit
+# Perlu diedit
 # Buat Decorator untuk internal only
 def internal_required(fn):
     @wraps(fn)
@@ -32,7 +32,7 @@ def internal_required(fn):
             return fn(*args, **kwargs)
     return wrapper
 
-Perlu diedit
+# Perlu diedit
 # Buat Decorator untuk client-public
 def public_required(fn):
     @wraps(fn)
@@ -78,17 +78,19 @@ def after_request(response):
 
 # import blueprints
 
-perlu diedit sesuai kebutuhan
+# perlu diedit sesuai kebutuhan
 # from blueprints.clients.resources import bp_client
 # from blueprints.auth import bp_auth
 # from blueprints.penerbit.resources import bp_penerbit
 # from blueprints.book.resources import bp_book
+from blueprints.product_category.resources import bp_product_category
 
 
 # app.register_blueprint(bp_client, url_prefix='/client')
 # app.register_blueprint(bp_auth, url_prefix='/login')
 # app.register_blueprint(bp_penerbit, url_prefix='/penerbit')
 # app.register_blueprint(bp_book, url_prefix='')
+app.register_blueprint(bp_product_category, url_prefix='/admin/category')
 
 
 db.create_all()
