@@ -34,7 +34,7 @@ def internal_required(fn):
 
 # Perlu diedit
 # Buat Decorator untuk client-public
-def public_required(fn):
+def buyer_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         verify_jwt_in_request()
@@ -83,12 +83,14 @@ from blueprints.clients.resources import bp_client
 from blueprints.auth import bp_auth
 from blueprints.product_category.resources import bp_product_category
 from blueprints.product.resources import bp_product
+from blueprints.buyer_details.resources import bp_buyer_details
 
 
 app.register_blueprint(bp_client, url_prefix='/client')
 app.register_blueprint(bp_auth, url_prefix='/login')
 app.register_blueprint(bp_product_category, url_prefix='/admin/category')
 app.register_blueprint(bp_product, url_prefix='/admin/product')
+app.register_blueprint(bp_buyer_details, url_prefix='')
 
 
 db.create_all()
