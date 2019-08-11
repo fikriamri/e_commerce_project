@@ -13,23 +13,23 @@ class ProductCategoryResource(Resource):
     def __init__(self):
         pass
     
-    # @jwt_required
-    # @internal_required
+    @jwt_required
+    @internal_required
     def get(self, id): # get by id
         qry = ProductCategory.query.get(id)
         if qry is not None:
             return marshal(qry, ProductCategory.response_fields), 200, {'Content-Type': 'application/json'}
         return {'status': 'Category Not Found'}, 404, {'Content-Type': 'application/json'}
 
-    # @jwt_required
-    # @internal_required
+    @jwt_required
+    @internal_required
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('category_name', location='json', required=True)
         parser.add_argument('description', location='json', required=True)
         data = parser.parse_args()
 
-        qry = ProductCategory.query.filter_by(category_name=data['category_name'])  
+        qry = ProductCategory.query.filter_by(category_name=data['category_name']).first()  
         if qry is not None:
             return {'status': 'Category_name already existed! Please choose different category_name!'}, 404, {'Content-Type': 'application/json'}
         
@@ -41,8 +41,8 @@ class ProductCategoryResource(Resource):
 
         return marshal(product_category, ProductCategory.response_fields), 200, {'Content-Type': 'application/json'}
 
-    # @jwt_required
-    # @internal_required
+    @jwt_required
+    @internal_required
     def put(self, id):
         parser = reqparse.RequestParser()
         parser.add_argument('category_name', location='json', required=True)
@@ -53,8 +53,8 @@ class ProductCategoryResource(Resource):
         if qry is None:
             return {'status': 'Category Not Found'}, 404, {'Content-Type': 'application/json'}
 
-        qry = ProductCategory.query.filter_by(category_name=args['category_name'])  
-        if qry is not None:
+        check_qry = ProductCategory.query.filter_by(category_name=args['category_name']).first()
+        if check_qry is not None:
             return {'status': 'Category_name already existed! Please choose different category_name!'}, 404, {'Content-Type': 'application/json'}
 
         qry.category_name = args['category_name']
@@ -63,8 +63,8 @@ class ProductCategoryResource(Resource):
 
         return marshal(qry, ProductCategory.response_fields), 200, {'Content-Type': 'application/json'}
 
-    # @jwt_required
-    # @internal_required
+    @jwt_required
+    @internal_required
     def delete(self, id):
         qry = ProductCategory.query.get(id)
         if qry is None:
@@ -83,8 +83,8 @@ class ProductCategoryList(Resource):
     def __init__(self):
         pass
 
-    # @jwt_required
-    # @internal_required
+    @jwt_required
+    @internal_required
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)

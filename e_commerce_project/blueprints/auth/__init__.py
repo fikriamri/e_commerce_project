@@ -1,9 +1,8 @@
-Perlu disesuaikan dengan model sendiri
 from flask import Blueprint
 from flask_restful import Api, Resource, reqparse, marshal
 
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt_claims
-# from blueprints.clients.resources import Clients, ClientList # Perlu diganti
+from blueprints.clients.resources import Clients, ClientList
 
 bp_auth = Blueprint('auth', __name__)
 api = Api(bp_auth)
@@ -14,8 +13,8 @@ class CreateTokenResources(Resource):
     def post(self):
         ## Create token
         parser = reqparse.RequestParser()
-        parser.add_argument('client_key', type=str, location='args', required=True)
-        parser.add_argument('client_secret', type=str, location='args', required= True)
+        parser.add_argument('client_key', type=str, location='json', required=True)
+        parser.add_argument('client_secret', type=str, location='json', required= True)
         args = parser.parse_args()
 
         qry = Clients.query

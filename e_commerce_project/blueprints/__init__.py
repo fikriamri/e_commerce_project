@@ -79,17 +79,13 @@ def after_request(response):
 # import blueprints
 
 # perlu diedit sesuai kebutuhan
-# from blueprints.clients.resources import bp_client
-# from blueprints.auth import bp_auth
-# from blueprints.penerbit.resources import bp_penerbit
-# from blueprints.book.resources import bp_book
+from blueprints.clients.resources import bp_client
+from blueprints.auth import bp_auth
 from blueprints.product_category.resources import bp_product_category
 
 
-# app.register_blueprint(bp_client, url_prefix='/client')
-# app.register_blueprint(bp_auth, url_prefix='/login')
-# app.register_blueprint(bp_penerbit, url_prefix='/penerbit')
-# app.register_blueprint(bp_book, url_prefix='')
+app.register_blueprint(bp_client, url_prefix='/client')
+app.register_blueprint(bp_auth, url_prefix='/login')
 app.register_blueprint(bp_product_category, url_prefix='/admin/category')
 
 
