@@ -1,3 +1,5 @@
+*.sql
+
 e_commerce_project/storage/log/*.log.*
 e_commerce_project/storage/log/*.log
 .vscode
