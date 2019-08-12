@@ -5,8 +5,8 @@ from flask_restful import fields
 class Transaction(db.Model):
     __tablename__ = "transaction"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    date = db.Column(db.Integer(20), nullable=False)
-    time = db.Column(db.String(20, nullable=False))
+    date = db.Column(db.String(20), nullable=False)
+    time = db.Column(db.String(20), nullable=False)
     buyer_id = db.Column(db.Integer, db.ForeignKey('buyer_details.id'))
     buyer_name = db.Column(db.String(50), nullable=False)
     total_qty = db.Column(db.Integer)
@@ -23,7 +23,7 @@ class Transaction(db.Model):
         'buyer_name': fields.String,
         'total_qty': fields.Integer,
         'total_price': fields.Integer,
-        'courier': fields.String
+        'courier': fields.String,
         'payment_method': fields.String
     }
 
@@ -38,4 +38,4 @@ class Transaction(db.Model):
         self.payment_method = payment_method
 
     def __repr__(self):
-        return '<Product %r>' % self.id
+        return '<Transaction %r>' % self.id
