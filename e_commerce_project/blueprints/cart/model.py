@@ -5,26 +5,26 @@ from flask_restful import fields
 class Cart(db.Model):
     __tablename__ = "cart"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    client_id = db.Column(db.Integer, db.ForeignKey('client.client_id'))
-    client_name = db.Column(db.String(50), nullable=False)
+    buyer_id = db.Column(db.Integer, db.ForeignKey('buyer_details.id'))
+    buyer_name = db.Column(db.String(50), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
-    product_name = db.Column(db.String(50), unique=True, nullable=False)
+    product_name = db.Column(db.String(50), nullable=False)
     price = db.Column(db.Integer, nullable=False)
     qty = db.Column(db.Integer, nullable=False)
 
     response_fields = {
         'id': fields.Integer,
-        'client_id': fields.Integer,
-        'client_name': fields.String,
+        'buyer_id': fields.Integer,
+        'buyer_name': fields.String,
         'product_id': fields.Integer,
-        'product_name': fields.String,
+        'product_name': fields.String, 
         'price': fields.Integer,
         'qty': fields.Integer
     }
 
-    def __init__(self, client_id, client_name, product_id, product_name, price, qty):
-        self.client_id = client_id
-        self.client_name = client_name
+    def __init__(self, buyer_id, buyer_name, product_id, product_name, price, qty):
+        self.buyer_id = buyer_id
+        self.buyer_name = buyer_name
         self.product_id = product_id
         self.product_name = product_name
         self.price = price
