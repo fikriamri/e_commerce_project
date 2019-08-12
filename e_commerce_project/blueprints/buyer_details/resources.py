@@ -6,7 +6,6 @@ from sqlalchemy import desc
 from blueprints import app, db, internal_required, buyer_required
 from flask_jwt_extended import jwt_required, get_jwt_claims
 
-
 bp_buyer_details = Blueprint('buyer_details', __name__)
 api = Api(bp_buyer_details)
 
