@@ -13,13 +13,15 @@ class TransactionDetails(db.Model):
 
     response_fields = {
         'id': fields.Integer,
+        'transaction_id': fields.Integer,
         'product_id': fields.Integer,
         'product_name': fields.String, 
         'price': fields.Integer,
         'qty': fields.Integer
     }
 
-    def __init__(self, product_id, product_name, price, qty):
+    def __init__(self, transaction_id, product_id, product_name, price, qty):
+        self.transaction_id = transaction_id
         self.product_id = product_id
         self.product_name = product_name
         self.price = price
