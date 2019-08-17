@@ -20,6 +20,8 @@ class BuyerDetails(db.Model):
     address = db.Column(db.String(255), nullable=False)
     postal_code = db.Column(db.String(10), nullable=False)
     client_id = db.Column(db.Integer, db.ForeignKey('client.client_id'))
+    date_created  = db.Column(db.DateTime,  default=db.func.current_timestamp())
+    date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
     
     response_fields = {
         'id': fields.Integer,

@@ -22,8 +22,6 @@ class SellerSignUp(Resource):
         # Untuk membuat buyer details
         parser.add_argument('name', location='json', required=True)
         parser.add_argument('store_name', location='json', required=True)
-        parser.add_argument('bank_account', location='json', required=True)
-        parser.add_argument('account_number', location='json', required=True)
         parser.add_argument('email', location='json', required=True)
         parser.add_argument('phone_number', location='json', required=True)
         parser.add_argument('province', location='json', required=True)
@@ -34,6 +32,12 @@ class SellerSignUp(Resource):
 
         data = parser.parse_args()
 
+        # cek dulu apakah client_name sudah ada yang menggunakan
+        check_client = Clients.query.filter_by(client_key=data['client_key']).first()
+        if check_client is not None:
+            return {'status': 'client_name already taken'}
+        
+
         # Membuat data client, status pasti True
         client = Clients(data['client_key'], data['client_secret'], True)
         db.session.add(client)
@@ -41,7 +45,7 @@ class SellerSignUp(Resource):
 
         client_id = client.client_id
 
-        seller_details = SellerDetails(data['name'], data['store_name'], data['bank_account'], data['account_number'], data['email'], data['phone_number'], data['province'], data['city'], data['sub_district'], data['address'], data['postal_code'], client_id)
+        seller_details = SellerDetails(data['name'], data['store_name'], data['email'], data['phone_number'], data['province'], data['city'], data['sub_district'], data['address'], data['postal_code'], client_id)
         db.session.add(seller_details)
         db.session.commit()
 

@@ -14,6 +14,8 @@ class Product(db.Model):
     image = db.Column(db.String(255), nullable=False)
     stock = db.Column(db.Integer, nullable=False)
     sold = db.Column(db.Integer, nullable=False)
+    date_created  = db.Column(db.DateTime,  default=db.func.current_timestamp())
+    date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
     response_fields = {
         'id': fields.Integer,

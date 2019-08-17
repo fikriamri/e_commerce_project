@@ -10,6 +10,8 @@ class TransactionDetails(db.Model):
     product_name = db.Column(db.String(50), nullable=False)
     price = db.Column(db.Integer, nullable=False)
     qty = db.Column(db.Integer, nullable=False)
+    date_created  = db.Column(db.DateTime,  default=db.func.current_timestamp())
+    date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
     response_fields = {
         'id': fields.Integer,

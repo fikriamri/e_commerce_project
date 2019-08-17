@@ -11,6 +11,8 @@ class Cart(db.Model):
     product_name = db.Column(db.String(50), nullable=False)
     price = db.Column(db.Integer, nullable=False)
     qty = db.Column(db.Integer, nullable=False)
+    created_on = db.Column(db.DateTime, server_default=db.func.now())
+    updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
     response_fields = {
         'id': fields.Integer,

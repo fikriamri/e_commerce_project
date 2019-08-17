@@ -5,7 +5,7 @@ from blueprints.seller_details.model import SellerDetails
 from blueprints.product_category.model import ProductCategory
 from sqlalchemy import desc
 from blueprints import app, db, internal_required
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_claims
 
 bp_product = Blueprint('product', __name__)
 api = Api(bp_product)

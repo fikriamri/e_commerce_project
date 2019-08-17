@@ -7,9 +7,6 @@ class SellerDetails(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(50), nullable=False)
     store_name = db.Column(db.String(50), nullable=False)
-    # format pria/wanita    
-    bank_account = db.Column(db.String(50), nullable=False)
-    account_number = db.Column(db.String(50), nullable=False)
     # email harus unique 
     email = db.Column(db.String(50), unique=True, nullable=False)
     phone_number = db.Column(db.String(20), nullable=False)
@@ -20,16 +17,14 @@ class SellerDetails(db.Model):
     address = db.Column(db.String(255), nullable=False)
     postal_code = db.Column(db.String(10), nullable=False)
     client_id = db.Column(db.Integer, db.ForeignKey('client.client_id'))
-    created_on = db.Column(db.DateTime, server_default=db.func.now())
-    updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
+    date_created  = db.Column(db.DateTime,  default=db.func.current_timestamp())
+    date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
     
     response_fields = {
         'id': fields.Integer,
         'name': fields.String,
         'store_name': fields.String,
-        'bank_account': fields.String,
-        'account_number': fields.String,
         'email': fields.String,
         'phone_number': fields.String,
         'province': fields.String,
@@ -40,11 +35,9 @@ class SellerDetails(db.Model):
         'client_id': fields.Integer
     }
 
-    def __init__(self, name, store_name, bank_account, account_number, email, phone_number, province, city, sub_district, address, postal_code, client_id):
+    def __init__(self, name, store_name, email, phone_number, province, city, sub_district, address, postal_code, client_id):
         self.name = name
         self.store_name = store_name
-        self.bank_account = bank_account
-        self.account_number = account_number
         self.email = email
         self.phone_number = phone_number
         self.province = province
