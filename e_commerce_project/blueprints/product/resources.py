@@ -1,6 +1,7 @@
 from flask import Blueprint
 from flask_restful import Resource, Api, reqparse, marshal, inputs
 from .model import Product
+from blueprints.seller_details.model import SellerDetails
 from blueprints.product_category.model import ProductCategory
 from sqlalchemy import desc
 from blueprints import app, db, internal_required
@@ -34,7 +35,13 @@ class ProductResource(Resource):
         parser.add_argument('stock', location='json', required=True)
         data = parser.parse_args()
 
-        qry = Product.query.filter_by(product_name=data['product_name']).first()  
+        # Untuk mendapatkan id dari seller yang sedang login
+        claims = get_jwt_claims()
+
+        seller = marshal(SellerDetails.query.filter_by(client_id=claims['client_id']).first(), SellerDetails.response_fields)
+
+        qry = Product.query.filter_by(product_name=data['product_name'])
+        qry = qry.filter_by(seller_id=seller['id']).first()
         if qry is not None:
             return {'status': 'Product_name already existed! Please choose different product_name!'}, 404, {'Content-Type': 'application/json'}
 
@@ -43,7 +50,7 @@ class ProductResource(Resource):
         if product_category is None:
             return {'status': 'Product Category Not Found!'}, 404, {'Content-Type': 'application/json'}
         
-        product = Product(data['product_name'], data['product_category_id'], data['description'], data['price'],data['image'], data['stock'])
+        product = Product(seller['id'], seller['store_name'], data['product_name'], data['product_category_id'], data['description'], data['price'],data['image'], data['stock'], 0)
         db.session.add(product)
         db.session.commit()
 
@@ -63,15 +70,23 @@ class ProductResource(Resource):
         parser.add_argument('stock', location='json', required=True)
         args = parser.parse_args()
 
+        # Untuk mendapatkan id dari seller yang sedang login
+        claims = get_jwt_claims()
+        seller = marshal(SellerDetails.query.filter_by(client_id=claims['client_id']).first(), SellerDetails.response_fields)
+
         qry = Product.query.get(id)
         if qry is None:
             return {'status': 'Product Not Found'}, 404, {'Content-Type': 'application/json'}
 
+        # cek apabila nama product sudah ada untuk seller yang bersangkutan
         check_qry = Product.query.filter_by(product_name=args['product_name']).first()
+        check_qry = check_qry.filter_by(seller_id=seller['id'])
         contain_check_qry = marshal(check_qry, Product.response_fields)
 
         if check_qry is not None:
             if contain_check_qry['id'] == int(id):
+                qry.seller_id = args['seller_id']
+                qry.store_name = args['store_name']
                 qry.product_name = args['product_name']
                 qry.product_category_id = args['product_category_id']
                 qry.description = args['description']
@@ -81,21 +96,17 @@ class ProductResource(Resource):
                 db.session.commit()
                 return marshal(qry, Product.response_fields), 200, {'Content-Type': 'application/json'}
             else:
-                return {'status': 'product_name already existed! Please choose different product_name!'}, 404, {'Content-Type': 'application/json'}
-        else:
-            qry.product_name = args['product_name']
-            qry.product_category_id = args['product_category_id']
-            qry.description = args['description']
-            qry.price = args['price']
-            qry.image = args['image']
-            qry.stock = args['stock']
-            db.session.commit()
+                return {'status': 'same product_name already existed on your store! Please choose different product_name!'}, 404, {'Content-Type': 'application/json'}
 
 
     @jwt_required
     @internal_required
     def delete(self, id):
+        # Untuk mendapatkan id dari seller yang sedang login
+        claims = get_jwt_claims()
+        seller = marshal(SellerDetails.query.filter_by(client_id=claims['client_id']).first(), SellerDetails.response_fields)
         qry = Product.query.get(id)
+        qry = qry.filter_by(seller_id=seller['id']).first()
         if qry is None:
             return {'status': 'Product Not Found'}, 404, {'Content-Type': 'application/json'}
 
@@ -125,7 +136,11 @@ class ProductList(Resource):
 
         offset = (args['p'] * args['rp']) - args['rp']
 
-        qry = Product.query
+        # Untuk mendapatkan id dari seller yang sedang login
+        claims = get_jwt_claims()
+        seller = marshal(SellerDetails.query.filter_by(client_id=claims['client_id']).first(), SellerDetails.response_fields)
+
+        qry = Product.query.filter_by(seller_id=seller['id'])
 
         if args['product_category_id'] is not None:
             qry = qry.filter_by(product_category_id=args['product_category_id'])  
