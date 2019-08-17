@@ -8,7 +8,6 @@ from blueprints.product.model import Product
 from sqlalchemy import desc
 from blueprints import app, db, internal_required, buyer_required
 from flask_jwt_extended import jwt_required, get_jwt_claims
-from datetime import datetime
 
 bp_transaction = Blueprint('transaction', __name__)
 api = Api(bp_transaction)
@@ -50,10 +49,7 @@ class TransactionResource(Resource):
             if stock_less != []:
                 return {'status': 'checkout failed because stock not available', 'stock_available': stock_less}
             else:
-                now = datetime.now()
-                date = now.strftime("%d/%m/%Y")
-                time = now.strftime("%H:%M:%S")
-                transaction = Transaction(date, time, buyer['id'], buyer['name'], 0, 0, data['courier'], data['payment_method'])
+                transaction = Transaction(buyer['id'], buyer['name'], 0, 0, data['courier'], data['payment_method'])
                 db.session.add(transaction)
                 db.session.commit()
                 # untuk mendapatkan id dari transaksi yang baru dibuat
@@ -77,12 +73,15 @@ class TransactionResource(Resource):
                     product_contain = marshal(Product.query.filter_by(id=row_contain['product_id']).first(), Product.response_fields)
                     product = Product.query.get(row_contain['product_id'])
                     product.id = product_contain['id']
+                    product.seller_id = product_contain['seller_id']
+                    product.store_name = product_contain['store_name']
                     product.product_name = product_contain['product_name']
                     product.product_category_id = product_contain['product_category_id']
                     product.description = product_contain['description']
                     product.price = product_contain['price']
                     product.image = product_contain['image']
                     product.stock = int(product_contain['stock']) - int(row_contain['qty'])
+                    product.sold = int(product_contain['sold']) + int(row_contain['qty'])
                     db.session.commit()
 
                     # Untuk menghapus barang dari cart
@@ -93,8 +92,6 @@ class TransactionResource(Resource):
 
                 # Menginput ulang di transaction untuk memasukan total qty dan total price
                 transaction.id = transaction_contain['id']
-                transaction.date = transaction_contain['date']
-                transaction.time = transaction_contain['time']
                 transaction.buyer_id = transaction_contain['buyer_id']
                 transaction.buyer_name = transaction_contain['buyer_name']
                 transaction.total_qty = total_qty
