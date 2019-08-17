@@ -27,7 +27,7 @@ def internal_required(fn):
         verify_jwt_in_request()
         claims = get_jwt_claims()
         if not claims['status']: # If berjalan jika statement True, jadi 'not False' = True
-            return {'status': 'FORBIDDEN', 'message': 'Internal Only'}, 403
+            return {'status': 'FORBIDDEN', 'message': 'Seller Only'}, 403
         else:
             return fn(*args, **kwargs)
     return wrapper
@@ -84,6 +84,7 @@ from blueprints.auth import bp_auth
 from blueprints.product_category.resources import bp_product_category
 from blueprints.product.resources import bp_product
 from blueprints.buyer_details.resources import bp_buyer_details
+from blueprints.seller_details.resources import bp_seller_details
 from blueprints.cart.resources import bp_cart
 from blueprints.transaction.resources import bp_transaction
 from blueprints.transaction_details.resources import bp_transaction_details
@@ -94,6 +95,7 @@ app.register_blueprint(bp_auth, url_prefix='/login')
 app.register_blueprint(bp_product_category, url_prefix='/admin/category')
 app.register_blueprint(bp_product, url_prefix='/admin/product')
 app.register_blueprint(bp_buyer_details, url_prefix='')
+app.register_blueprint(bp_seller_details, url_prefix='')
 app.register_blueprint(bp_cart, url_prefix='/cart')
 app.register_blueprint(bp_transaction, url_prefix='')
 app.register_blueprint(bp_transaction_details, url_prefix='')

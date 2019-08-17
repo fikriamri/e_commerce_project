@@ -8,6 +8,8 @@ class Clients(db.Model):
     client_key = db.Column(db.String(30), unique=True, nullable=False)
     client_secret = db.Column(db.String(30), nullable=False)
     status = db.Column(db.Boolean, nullable=False)
+    date_created  = db.Column(db.DateTime,  default=db.func.current_timestamp())
+    date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
     response_fields = {
         'client_id': fields.Integer,
