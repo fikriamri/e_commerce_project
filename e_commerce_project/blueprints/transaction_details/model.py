@@ -2,11 +2,10 @@ from blueprints import db
 from flask_restful import fields
 
 # PRODUCTS CLASS
-class Cart(db.Model):
-    __tablename__ = "cart"
+class TransactionDetails(db.Model):
+    __tablename__ = "transaction_details"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    buyer_id = db.Column(db.Integer, db.ForeignKey('buyer_details.id'))
-    buyer_name = db.Column(db.String(50), nullable=False)
+    transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
     product_name = db.Column(db.String(50), nullable=False)
     price = db.Column(db.Integer, nullable=False)
@@ -14,21 +13,19 @@ class Cart(db.Model):
 
     response_fields = {
         'id': fields.Integer,
-        'buyer_id': fields.Integer,
-        'buyer_name': fields.String,
+        'transaction_id': fields.Integer,
         'product_id': fields.Integer,
         'product_name': fields.String, 
         'price': fields.Integer,
         'qty': fields.Integer
     }
 
-    def __init__(self, buyer_id, buyer_name, product_id, product_name, price, qty):
-        self.buyer_id = buyer_id
-        self.buyer_name = buyer_name
+    def __init__(self, transaction_id, product_id, product_name, price, qty):
+        self.transaction_id = transaction_id
         self.product_id = product_id
         self.product_name = product_name
         self.price = price
         self.qty = qty
 
     def __repr__(self):
-        return '<Cart %r>' % self.id
+        return '<transactionDetails %r>' % self.id

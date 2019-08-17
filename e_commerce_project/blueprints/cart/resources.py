@@ -67,25 +67,33 @@ class CartResource(Resource):
         check_cart = check_cart.filter_by(buyer_id=buyer['id']).first()
         
         if check_cart is None:
-            add_to_cart = Cart(buyer['id'], buyer['name'], data['product_id'], product['product_name'], product['price'], data['qty'])
-            db.session.add(add_to_cart)
-            db.session.commit()
-            app.logger.debug('DEBUG : %s', add_to_cart)
-            return marshal(add_to_cart, Cart.response_fields), 200, {'Content-Type': 'application/json'}
+            # Mengecek apakah stok barang tersedia sesuai qty yang diinginkan atau tidak
+            if int(data['qty']) <= product['stock']:
+                add_to_cart = Cart(buyer['id'], buyer['name'], data['product_id'], product['product_name'], product['price'], data['qty'])
+                db.session.add(add_to_cart)
+                db.session.commit()
+                app.logger.debug('DEBUG : %s', add_to_cart)
+                return marshal(add_to_cart, Cart.response_fields), 200, {'Content-Type': 'application/json'}
+            else:
+                return {'status': 'stock available only '+ str(product['stock'])}
         elif check_cart is not None:
             check_cart_contain = marshal(check_cart, Cart.response_fields)
             # Menjumlahkan qty sebelumnya dengan qty yang diinput buyer
             qty = check_cart_contain['qty'] + int(data['qty'])
-            # Mendapatkan query dengan id sesuai check_cart
-            qry = Cart.query.get(check_cart_contain['id'])
-            qry.buyer_id = check_cart_contain['buyer_id']
-            qry.buyer_name = check_cart_contain['buyer_name']
-            qry.product_id = check_cart_contain['product_id']
-            qry.price = check_cart_contain['price']
-            qry.qty = qty
-            db.session.commit()
+            # Mengecek apakah stok barang tersedia sesuai qty yang diinginkan atau tidak
+            if qty <= product['stock']:
+                # Mendapatkan query dengan id sesuai check_cart
+                qry = Cart.query.get(check_cart_contain['id'])
+                qry.buyer_id = check_cart_contain['buyer_id']
+                qry.buyer_name = check_cart_contain['buyer_name']
+                qry.product_id = check_cart_contain['product_id']
+                qry.price = check_cart_contain['price']
+                qry.qty = qty
+                db.session.commit()
 
-            return marshal(qry, Cart.response_fields), 200, {'Content-Type': 'application/json'}
+                return marshal(qry, Cart.response_fields), 200, {'Content-Type': 'application/json'}
+            else:
+                return {'status': 'stock available only '+ str(product['stock'])}
 
     @jwt_required
     @buyer_required
@@ -104,24 +112,32 @@ class CartResource(Resource):
         check_cart = check_cart.filter_by(buyer_id=buyer['id']).first()
         
         if check_cart is None:
-            add_to_cart = Cart(buyer['id'], buyer['name'], data['product_id'], product['product_name'], product['price'], data['qty'])
-            db.session.add(add_to_cart)
-            db.session.commit()
-            app.logger.debug('DEBUG : %s', add_to_cart)
-            return marshal(add_to_cart, Cart.response_fields), 200, {'Content-Type': 'application/json'}
+            # Mengecek apakah stok barang tersedia sesuai qty yang diinginkan atau tidak
+            if int(data['qty']) <= product['stock']:
+                add_to_cart = Cart(buyer['id'], buyer['name'], data['product_id'], product['product_name'], product['price'], data['qty'])
+                db.session.add(add_to_cart)
+                db.session.commit()
+                app.logger.debug('DEBUG : %s', add_to_cart)
+                return marshal(add_to_cart, Cart.response_fields), 200, {'Content-Type': 'application/json'}
+            else:
+                return {'status': 'stock available only '+ str(product['stock'])}
         elif check_cart is not None:
-            check_cart_contain = marshal(check_cart, Cart.response_fields)
-            # Mendapatkan query dengan id sesuai check_cart
-            qry = Cart.query.get(check_cart_contain['id'])
-            qry.buyer_id = check_cart_contain['buyer_id']
-            qry.buyer_name = check_cart_contain['buyer_name']
-            qry.product_id = check_cart_contain['product_id']
-            qry.price = check_cart_contain['price']
-            # Menyesuaikan dengan inputan user
-            qry.qty = data['qty']
-            db.session.commit()
+            # Mengecek apakah stok barang tersedia sesuai qty yang diinginkan atau tidak
+            if int(data['qty']) <= product['stock']:
+                check_cart_contain = marshal(check_cart, Cart.response_fields)
+                # Mendapatkan query dengan id sesuai check_cart
+                qry = Cart.query.get(check_cart_contain['id'])
+                qry.buyer_id = check_cart_contain['buyer_id']
+                qry.buyer_name = check_cart_contain['buyer_name']
+                qry.product_id = check_cart_contain['product_id']
+                qry.price = check_cart_contain['price']
+                # Menyesuaikan dengan inputan user
+                qry.qty = data['qty']
+                db.session.commit()
 
-            return marshal(qry, Cart.response_fields), 200, {'Content-Type': 'application/json'}
+                return marshal(qry, Cart.response_fields), 200, {'Content-Type': 'application/json'}
+            else:
+                return {'status': 'stock available only '+ str(product['stock'])}
 
     @jwt_required
     @buyer_required
