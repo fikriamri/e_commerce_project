@@ -42,22 +42,24 @@ class TransactionResource(Resource):
             date = now.strftime("%d/%m/%Y")
             time = now.strftime("%H:%M:%S")
             transaction = Transaction(date, time, buyer['id'], buyer['name'], 0, 0, data['courier'], data['payment_method'])
-            transaction_contain = marshal(transaction, Transaction.response_fields)
             db.session.add(transaction)
             db.session.commit()
+            # untuk mendapatkan id dari transaksi yang baru dibuat
+            transaction_contain = marshal(transaction, Transaction.response_fields)
 
             total_qty = 0
             total_price = 0
             for row in check_cart.all():
                 row_contain = marshal(row, Cart.response_fields)
-                transaction_details = TransactionDetails(transaction_contain['id'], row_contain['product_id'], row_contain['product_name'], row_contain['price'], row_contain['qty'])
+                id = transaction_contain['id']
+                transaction_details = TransactionDetails(id, row_contain['product_id'], row_contain['product_name'], row_contain['price'], row_contain['qty'])
                 db.session.add(transaction_details)
                 db.session.commit()
+                # Untuk mendapatkan total qty
                 total_qty += int(row_contain['qty'])
+                # Untuk mendapatkan total price
                 total_price += int(row_contain['qty']) * int(row_contain['price'])
 
-            transaction = Transaction.query.get(transaction_contain['id'])
-            transaction_contain = marshal(transaction, Transaction.response_fields)
             transaction.id = transaction_contain['id']
             transaction.date = transaction_contain['date']
             transaction.time = transaction_contain['time']
