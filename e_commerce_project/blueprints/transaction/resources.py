@@ -34,11 +34,7 @@ class TransactionResource(Resource):
         # untuk mengecek apakah cart kosong atau tidak
         check_cart = Cart.query.filter_by(buyer_id=buyer['id'])
         
-        if check_cart is None:
-            add_to_cart = Cart(buyer['id'], buyer['name'], data['product_id'], product['product_name'], product['price'], data['qty'])
-            db.session.add(add_to_cart)
-            db.session.commit()
-            app.logger.debug('DEBUG : %s', add_to_cart)
+        if check_cart.first() is None:
             return {'status': 'Cart Empty!'}, 200, {'Content-Type': 'application/json'}
         elif check_cart is not None:
             # variable untuk menyimpan data product yang kurang
@@ -66,8 +62,8 @@ class TransactionResource(Resource):
                 # Untuk menghitung total qty dan total price yang nantinya akan ditambahkan ke table transaction
                 total_qty = 0
                 total_price = 0
-                # Untuk memasukan barang dari cart ke transaction details
                 for row in check_cart.all():
+                    # Untuk memasukan barang dari cart ke transaction details
                     row_contain = marshal(row, Cart.response_fields)
                     transaction_details = TransactionDetails(transaction_contain['id'], row_contain['product_id'], row_contain['product_name'], row_contain['price'], row_contain['qty'])
                     db.session.add(transaction_details)
@@ -76,6 +72,24 @@ class TransactionResource(Resource):
                     total_qty += int(row_contain['qty'])
                     # Untuk mendapatkan total price
                     total_price += int(row_contain['qty']) * int(row_contain['price'])
+
+                    # Untuk mengurangi product stock dengan product yang dicheckout
+                    product_contain = marshal(Product.query.filter_by(id=row_contain['product_id']).first(), Product.response_fields)
+                    product = Product.query.get(row_contain['product_id'])
+                    product.id = product_contain['id']
+                    product.product_name = product_contain['product_name']
+                    product.product_category_id = product_contain['product_category_id']
+                    product.description = product_contain['description']
+                    product.price = product_contain['price']
+                    product.image = product_contain['image']
+                    product.stock = int(product_contain['stock']) - int(row_contain['qty'])
+                    db.session.commit()
+
+                    # Untuk menghapus barang dari cart
+                    product_in_cart = Cart.query.filter_by(product_id=row_contain['product_id'])
+                    product_in_cart = product_in_cart.filter_by(buyer_id=buyer['id']).first()
+                    db.session.delete(product_in_cart)
+                    db.session.commit()
 
                 # Menginput ulang di transaction untuk memasukan total qty dan total price
                 transaction.id = transaction_contain['id']
