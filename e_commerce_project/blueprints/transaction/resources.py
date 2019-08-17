@@ -51,8 +51,7 @@ class TransactionResource(Resource):
             total_price = 0
             for row in check_cart.all():
                 row_contain = marshal(row, Cart.response_fields)
-                id = transaction_contain['id']
-                transaction_details = TransactionDetails(id, row_contain['product_id'], row_contain['product_name'], row_contain['price'], row_contain['qty'])
+                transaction_details = TransactionDetails(transaction_contain['id'], row_contain['product_id'], row_contain['product_name'], row_contain['price'], row_contain['qty'])
                 db.session.add(transaction_details)
                 db.session.commit()
                 # Untuk mendapatkan total qty

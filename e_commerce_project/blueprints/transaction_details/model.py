@@ -5,7 +5,7 @@ from flask_restful import fields
 class TransactionDetails(db.Model):
     __tablename__ = "transaction_details"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    transcation_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
+    transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'))
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
     product_name = db.Column(db.String(50), nullable=False)
     price = db.Column(db.Integer, nullable=False)
