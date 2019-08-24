@@ -17,6 +17,44 @@ class TransactionResource(Resource):
     def __init__(self):
         pass
 
+    def options(self):
+        return {'Status': 'OK'}, 200
+
+    @jwt_required
+    @internal_required
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('p', type=int, location='args', default=1)
+        parser.add_argument('rp', type=int, location='args', default=25)
+        parser.add_argument('orderby', location='args', help='invalid orderby value', choices=('total_qty', 'total_price'))
+        parser.add_argument('sort', location='args', help='invalid sort value', choices=('desc', 'asc'))
+        args = parser.parse_args()
+
+        offset = (args['p'] * args['rp']) - args['rp']
+
+        # Untuk mendapatkan id dari seller yang sedang login
+        claims = get_jwt_claims()
+        buyer = marshal(BuyerDetails.query.filter_by(client_id=claims['client_id']).first(), BuyerDetails.response_fields)
+
+        qry = Transaction.query.filter_by(buyer_id=buyer['id'])
+        
+        if args['orderby'] is not None:
+            if args['orderby'] == 'total_qty':
+                if args['sort'] == 'desc':
+                    qry = qry.order_by(desc(Transaction.total_qty)) # bisa gini
+                else:
+                    qry = qry.order_by((Transaction.total_qty))
+            elif args['orderby'] == 'total_price':
+                if args['sort'] == 'desc':
+                    qry = qry.order_by((Transaction.total_price).desc()) # bisa juga gini   
+                else:
+                    qry = qry.order_by((Transaction.total_price))
+
+        rows = []
+        for row in qry.limit(args['rp']).offset(offset).all():
+            rows.append(marshal(row, Transaction.response_fields))
+        return rows, 200, {'Content-Type': 'application/json'}
+
     @jwt_required
     @buyer_required
     def post(self):
@@ -102,5 +140,5 @@ class TransactionResource(Resource):
 
                 return marshal(transaction, Transaction.response_fields), 200, {'Content-Type': 'application/json'}
 
-api.add_resource(TransactionResource, '/checkout', '/checkout/<id>')
+api.add_resource(TransactionResource, '/checkout')
 

@@ -7,3 +7,4 @@ flask-script
 flask-jwt-extended
 requests
 pytest
+flask-cors

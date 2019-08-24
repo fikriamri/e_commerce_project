@@ -10,9 +10,11 @@ bp_seller_details = Blueprint('seller_details', __name__)
 api = Api(bp_seller_details)
 
 class SellerSignUp(Resource):
-
     def __init__(self):
         pass
+
+    def options(self):
+        return {'Status': 'OK'}, 200
     
     def post(self):
         parser = reqparse.RequestParser()
@@ -24,9 +26,6 @@ class SellerSignUp(Resource):
         parser.add_argument('store_name', location='json', required=True)
         parser.add_argument('email', location='json', required=True)
         parser.add_argument('phone_number', location='json', required=True)
-        parser.add_argument('province', location='json', required=True)
-        parser.add_argument('city', location='json', required=True)
-        parser.add_argument('sub_district', location='json', required=True)
         parser.add_argument('address', location='json', required=True)
         parser.add_argument('postal_code', location='json', required=True)
 
@@ -45,7 +44,7 @@ class SellerSignUp(Resource):
 
         client_id = client.client_id
 
-        seller_details = SellerDetails(data['name'], data['store_name'], data['email'], data['phone_number'], data['province'], data['city'], data['sub_district'], data['address'], data['postal_code'], client_id)
+        seller_details = SellerDetails(data['name'], data['store_name'], data['email'], data['phone_number'], data['address'], data['postal_code'], client_id)
         db.session.add(seller_details)
         db.session.commit()
 
@@ -66,6 +65,9 @@ class SellerProfile(Resource):
     def __init__(self):
         pass
 
+    def options(self):
+        return {'Status': 'OK'}, 200
+
     @jwt_required
     @internal_required
     def get(self):
@@ -81,12 +83,8 @@ class SellerProfile(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('name', location='json', required=True)
         parser.add_argument('store_name', location='json', required=True)
-        parser.add_argument('bank_account', location='json', required=True)
         parser.add_argument('email', location='json', required=True)
         parser.add_argument('phone_number', location='json', required=True)
-        parser.add_argument('province', location='json', required=True)
-        parser.add_argument('city', location='json', required=True)
-        parser.add_argument('sub_district', location='json', required=True)
         parser.add_argument('address', location='json', required=True)
         parser.add_argument('postal_code', location='json', required=True)
         args = parser.parse_args()
@@ -95,12 +93,8 @@ class SellerProfile(Resource):
         qry = SellerDetails.query.filter_by(client_id=claims['client_id']).first()
         qry.name = args['name']
         qry.store_name = args['store_name']
-        qry.bank_account = args['bank_account']
         qry.email = args['email']
         qry.phone_number = args['phone_number']
-        qry.province = args['province']
-        qry.city = args['city']
-        qry.sub_district = args['sub_district']
         qry.address = args['address']
         qry.postal_code = args['postal_code']
         qry.client_id = claims['client_id']

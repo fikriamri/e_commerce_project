@@ -7,8 +7,11 @@ from flask_script import Manager
 from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_claims
 from datetime import timedelta
 from functools import wraps
+from flask_cors import CORS
 
 app = Flask(__name__)
+app.config['APP_DEBUG'] = True
+CORS(app)
 
 ###################################
 # JWT
@@ -91,9 +94,9 @@ from blueprints.transaction_details.resources import bp_transaction_details
 
 
 app.register_blueprint(bp_client, url_prefix='/client')
-app.register_blueprint(bp_auth, url_prefix='/login')
+app.register_blueprint(bp_auth, url_prefix='/signin')
 app.register_blueprint(bp_product_category, url_prefix='/admin/category')
-app.register_blueprint(bp_product, url_prefix='/admin/product')
+app.register_blueprint(bp_product, url_prefix='/product')
 app.register_blueprint(bp_buyer_details, url_prefix='')
 app.register_blueprint(bp_seller_details, url_prefix='')
 app.register_blueprint(bp_cart, url_prefix='/cart')

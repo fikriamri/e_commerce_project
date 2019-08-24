@@ -12,6 +12,9 @@ class ProductCategoryResource(Resource):
 
     def __init__(self):
         pass
+
+    def options(self):
+        return {'Status': 'OK'}, 200
     
     @jwt_required
     @internal_required
@@ -82,6 +85,9 @@ class ProductCategoryList(Resource):
 
     def __init__(self):
         pass
+
+    def options(self):
+        return {'Status': 'OK'}, 200
 
     @jwt_required
     @internal_required

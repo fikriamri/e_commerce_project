@@ -3,7 +3,7 @@ from flask_restful import Resource, Api, reqparse, marshal, inputs
 from .model import Clients
 from sqlalchemy import desc
 from blueprints import app, db, internal_required
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_claims
 
 bp_client = Blueprint('client', __name__)
 api = Api(bp_client)
@@ -12,9 +12,11 @@ class ClientResource(Resource):
 
     def __init__(self):
         pass
+
+    def options(self, id):
+        return {'Status': 'OK'}, 200
     
     @jwt_required
-    @internal_required
     def get(self, id): # get by id
         qry = Clients.query.get(id)
         if qry is not None:
@@ -22,7 +24,6 @@ class ClientResource(Resource):
         return {'status': 'Client Not Found'}, 404, {'Content-Type': 'application/json'}
 
     @jwt_required
-    @internal_required
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('client_key', location='json')
@@ -39,27 +40,24 @@ class ClientResource(Resource):
         return marshal(client, Clients.response_fields), 200, {'Content-Type': 'application/json'}
 
     @jwt_required
-    @internal_required
     def put(self, id):
         parser = reqparse.RequestParser()
         parser.add_argument('client_key', location='json')
         parser.add_argument('client_secret', location='json')
-        parser.add_argument('status', type=bool, location='json', required=True)
         args = parser.parse_args()
 
+        claims = get_jwt_claims()
+
         qry = Clients.query.get(id)
-        if qry is None:
-            return {'status': 'Client Not Found'}, 404, {'Content-Type': 'application/json'}
 
         qry.client_key = args['client_key']
         qry.client_secret = args['client_secret']
-        qry.status = args['status']
+        qry.status = claims['status']
         db.session.commit()
 
         return marshal(qry, Clients.response_fields), 200, {'Content-Type': 'application/json'}
 
     @jwt_required
-    @internal_required
     def delete(self, id):
         qry = Clients.query.get(id)
         if qry is None:

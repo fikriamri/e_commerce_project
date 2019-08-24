@@ -13,6 +13,9 @@ class BuyerSignUp(Resource):
 
     def __init__(self):
         pass
+
+    def options(self):
+        return {'Status': 'OK'}, 200
     
     def post(self):
         parser = reqparse.RequestParser()
@@ -21,13 +24,8 @@ class BuyerSignUp(Resource):
         parser.add_argument('client_secret', location='json', required=True)
         # Untuk membuat buyer details
         parser.add_argument('name', location='json', required=True)
-        parser.add_argument('dob', location='json', required=True)
-        parser.add_argument('sex', location='json', required=True)
         parser.add_argument('email', location='json', required=True)
         parser.add_argument('phone_number', location='json', required=True)
-        parser.add_argument('province', location='json', required=True)
-        parser.add_argument('city', location='json', required=True)
-        parser.add_argument('sub_district', location='json', required=True)
         parser.add_argument('address', location='json', required=True)
         parser.add_argument('postal_code', location='json', required=True)
         data = parser.parse_args()
@@ -39,7 +37,7 @@ class BuyerSignUp(Resource):
 
         client_id = client.client_id
 
-        buyer_details = BuyerDetails(data['name'], data['dob'], data['sex'], data['email'], data['phone_number'], data['province'], data['city'], data['sub_district'], data['address'], data['postal_code'], client_id)
+        buyer_details = BuyerDetails(data['name'], data['email'], data['phone_number'], data['address'], data['postal_code'], client_id)
         db.session.add(buyer_details)
         db.session.commit()
 
@@ -61,6 +59,9 @@ class BuyerProfile(Resource):
     def __init__(self):
         pass
 
+    def options(self):
+        return {'Status': 'OK'}, 200
+
     @jwt_required
     @buyer_required
     def get(self):
@@ -75,13 +76,8 @@ class BuyerProfile(Resource):
     def put(self):
         parser = reqparse.RequestParser()
         parser.add_argument('name', location='json', required=True)
-        parser.add_argument('dob', location='json', required=True)
-        parser.add_argument('sex', location='json', required=True)
         parser.add_argument('email', location='json', required=True)
         parser.add_argument('phone_number', location='json', required=True)
-        parser.add_argument('province', location='json', required=True)
-        parser.add_argument('city', location='json', required=True)
-        parser.add_argument('sub_district', location='json', required=True)
         parser.add_argument('address', location='json', required=True)
         parser.add_argument('postal_code', location='json', required=True)
         args = parser.parse_args()
@@ -89,13 +85,8 @@ class BuyerProfile(Resource):
         claims = get_jwt_claims()
         qry = BuyerDetails.query.filter_by(client_id=claims['client_id']).first()
         qry.name = args['name']
-        qry.dob = args['dob']
-        qry.sex = args['sex']
         qry.email = args['email']
         qry.phone_number = args['phone_number']
-        qry.province = args['province']
-        qry.city = args['city']
-        qry.sub_district = args['sub_district']
         qry.address = args['address']
         qry.postal_code = args['postal_code']
         qry.client_id = claims['client_id']

@@ -14,11 +14,18 @@ class ProductResource(Resource):
 
     def __init__(self):
         pass
+
+    def options(self):
+        return {'Status': 'OK'}, 200
     
-    @jwt_required
-    @internal_required
-    def get(self, id): # get by id
-        qry = Product.query.get(id)
+    # @jwt_required
+    # @internal_required
+    # Bisa untuk public melihat detail barang
+    def get(self): # get by id
+        parser = reqparse.RequestParser()
+        parser.add_argument('product_id', location='args', required=True)
+        data = parser.parse_args()
+        qry = Product.query.filter_by(id=data['product_id']).first()
         if qry is not None:
             return marshal(qry, Product.response_fields), 200, {'Content-Type': 'application/json'}
         return {'status': 'Product Not Found'}, 404, {'Content-Type': 'application/json'}
@@ -60,8 +67,9 @@ class ProductResource(Resource):
 
     @jwt_required
     @internal_required
-    def put(self, id):
+    def put(self):
         parser = reqparse.RequestParser()
+        parser.add_argument('product_id', location='args', required=True)
         parser.add_argument('product_name', location='json', required=True)
         parser.add_argument('product_category_id', location='json', required=True)
         parser.add_argument('description', location='json', required=True)
@@ -74,46 +82,58 @@ class ProductResource(Resource):
         claims = get_jwt_claims()
         seller = marshal(SellerDetails.query.filter_by(client_id=claims['client_id']).first(), SellerDetails.response_fields)
 
-        qry = Product.query.get(id)
+        qry = Product.query.filter_by(id=args['product_id']).first()
         if qry is None:
             return {'status': 'Product Not Found'}, 404, {'Content-Type': 'application/json'}
 
-        # cek apabila nama product sudah ada untuk seller yang bersangkutan
-        check_qry = Product.query.filter_by(product_name=args['product_name']).first()
-        check_qry = check_qry.filter_by(seller_id=seller['id'])
-        contain_check_qry = marshal(check_qry, Product.response_fields)
+        qry.seller_id = seller['id']
+        qry.store_name = seller['store_name']
+        qry.product_name = args['product_name']
+        qry.product_category_id = args['product_category_id']
+        qry.description = args['description']
+        qry.price = args['price']
+        qry.image = args['image']
+        qry.stock = args['stock']
+        db.session.commit()
+        return marshal(qry, Product.response_fields), 200, {'Content-Type': 'application/json'}
 
-        if check_qry is not None:
-            if contain_check_qry['id'] == int(id):
-                qry.seller_id = args['seller_id']
-                qry.store_name = args['store_name']
-                qry.product_name = args['product_name']
-                qry.product_category_id = args['product_category_id']
-                qry.description = args['description']
-                qry.price = args['price']
-                qry.image = args['image']
-                qry.stock = args['stock']
-                db.session.commit()
-                return marshal(qry, Product.response_fields), 200, {'Content-Type': 'application/json'}
-            else:
-                return {'status': 'same product_name already existed on your store! Please choose different product_name!'}, 404, {'Content-Type': 'application/json'}
-
-
+    # Soft Delete
     @jwt_required
     @internal_required
-    def delete(self, id):
+    def delete(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('product_id', location='args', required=True)
+        args = parser.parse_args()
+
         # Untuk mendapatkan id dari seller yang sedang login
         claims = get_jwt_claims()
         seller = marshal(SellerDetails.query.filter_by(client_id=claims['client_id']).first(), SellerDetails.response_fields)
-        qry = Product.query.get(id)
-        qry = qry.filter_by(seller_id=seller['id']).first()
+
+        qry = Product.query.filter_by(id=args['product_id']).first()
         if qry is None:
             return {'status': 'Product Not Found'}, 404, {'Content-Type': 'application/json'}
 
-        db.session.delete(qry)
+        qry.description = 'deleted'
         db.session.commit()
 
         return {'status': 'Product Deleted'}, 200, {'Content-Type': 'application/json'}
+
+    # Hard Delete
+    # @jwt_required
+    # @internal_required
+    # def delete(self, id):
+    #     # Untuk mendapatkan id dari seller yang sedang login
+    #     claims = get_jwt_claims()
+    #     seller = marshal(SellerDetails.query.filter_by(client_id=claims['client_id']).first(), SellerDetails.response_fields)
+    #     qry = Product.query.get(id)
+    #     qry = qry.filter_by(seller_id=seller['id']).first()
+    #     if qry is None:
+    #         return {'status': 'Product Not Found'}, 404, {'Content-Type': 'application/json'}
+
+    #     db.session.delete(qry)
+    #     db.session.commit()
+
+    #     return {'status': 'Product Deleted'}, 200, {'Content-Type': 'application/json'}
 
     def patch(self):
         return 'Not yet implemented', 501
@@ -122,6 +142,9 @@ class ProductList(Resource):
 
     def __init__(self):
         pass
+
+    def options(self):
+        return {'Status': 'OK'}, 200
 
     @jwt_required
     @internal_required
@@ -162,6 +185,51 @@ class ProductList(Resource):
             rows.append(marshal(row, Product.response_fields))
         return rows, 200, {'Content-Type': 'application/json'}
 
-api.add_resource(ProductList, '')
+class AllProductList(Resource):
+
+    def __init__(self):
+        pass
+
+    def options(self):
+        return {'Status': 'OK'}, 200
+
+    # @jwt_required
+    # @internal_required
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('p', type=int, location='args', default=1)
+        parser.add_argument('rp', type=int, location='args', default=25)
+        parser.add_argument('product_category_id', type=str, location='args')
+        parser.add_argument('orderby', location='args', help='invalid orderby value', choices=('product_category_id', 'stock'))
+        parser.add_argument('sort', location='args', help='invalid sort value', choices=('desc', 'asc'))
+        args = parser.parse_args()
+
+        offset = (args['p'] * args['rp']) - args['rp']
+
+        qry = Product.query
+
+        if args['product_category_id'] is not None:
+            qry = qry.filter_by(product_category_id=args['product_category_id'])  
+        
+        if args['orderby'] is not None:
+            if args['orderby'] == 'product_category_id':
+                if args['sort'] == 'desc':
+                    qry = qry.order_by(desc(Product.product_category_id)) # bisa gini
+                else:
+                    qry = qry.order_by((Product.product_category_id))
+            elif args['orderby'] == 'stock':
+                if args['sort'] == 'desc':
+                    qry = qry.order_by((Product.stock).desc()) # bisa juga gini   
+                else:
+                    qry = qry.order_by((Product.stock))
+
+        rows = []
+        for row in qry.limit(args['rp']).offset(offset).all():
+            rows.append(marshal(row, Product.response_fields))
+        return rows, 200, {'Content-Type': 'application/json'}
+
+
+api.add_resource(ProductList, '/list')
+api.add_resource(AllProductList, '/all')
 api.add_resource(ProductResource, '', '/<id>')
 

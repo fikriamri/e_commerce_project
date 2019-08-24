@@ -10,6 +10,9 @@ api = Api(bp_auth)
 ### Resources
 class CreateTokenResources(Resource):
 
+    def options(self):
+        return {'Status': 'OK'}, 200
+
     def post(self):
         ## Create token
         parser = reqparse.RequestParser()
@@ -28,7 +31,7 @@ class CreateTokenResources(Resource):
             token = create_access_token(identity=args['client_key'], user_claims=client_data)
         else:
             return {'status': 'UNATHORIZED', 'message': 'invalid key or secret'}, 401
-        return {'token': token}, 200
+        return {'status': 'oke',  'token': token}, 200
 
     @jwt_required
     def get(self):
@@ -36,6 +39,9 @@ class CreateTokenResources(Resource):
         return {'claims': claims}, 200
 
 class RefreshTokenResources(Resource):
+
+    def options(self):
+        return {'Status': 'OK'}, 200
     
     @jwt_required
     def post(self):

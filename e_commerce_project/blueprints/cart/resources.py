@@ -15,40 +15,27 @@ class CartResource(Resource):
     def __init__(self):
         pass
 
+    def options(self):
+        return {'Status': 'OK'}, 200
+
     @jwt_required
     @buyer_required
     def get(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('p', type=int, location='args', default=1)
-        parser.add_argument('rp', type=int, location='args', default=25)
-        parser.add_argument('product_id', type=int, location='args')
-        parser.add_argument('orderby', location='args', choices=('price', 'qty'))
-        parser.add_argument('sort', location='args', choices=('asc', 'desc'))
-        args = parser.parse_args()
+        parser.add_argument('product_id', location='json', required=True)
+        data = parser.parse_args()
 
-        offset = (args['p'] * args['rp']) - args['rp']
+        claims = get_jwt_claims()
 
-        qry = Cart.query
+        buyer = marshal(BuyerDetails.query.filter_by(client_id=claims['client_id']).first(), BuyerDetails.response_fields)
 
-        if args['product_id'] is not None:
-            qry = qry.filter_by(product_id=args['product_id'])
-
-        if args['orderby'] is not None:
-            if args['orderby'] == 'price':
-                if args['sort'] == 'desc':
-                    qry = qry.order_by(desc(Cart.price)) # bisa gini
-                else:
-                    qry = qry.order_by((Cart.price))
-            elif args['orderby'] == 'qty':
-                if args['sort'] == 'desc':
-                    qry = qry.order_by((Cart.qty).desc()) # bisa juga gini   
-                else:
-                    qry = qry.order_by((Cart.qty))
-
-        rows = []
-        for row in qry.limit(args['rp']).offset(offset).all():
-            rows.append(marshal(row, Cart.response_fields))
-        return rows, 200, {'Content-Type': 'application/json'}
+        check_cart = Cart.query.filter_by(product_id=data['product_id'])
+        check_cart = check_cart.filter_by(buyer_id=buyer['id']).first()
+        
+        if check_cart is None:
+            return {'status': 'Product Not Found in Cart'}, 404, {'Content-Type': 'application/json'}
+        elif check_cart is not None:
+            return marshal(check_cart, Cart.response_fields), 200, {'Content-Type': 'application/json'}
 
     @jwt_required
     @buyer_required
@@ -159,52 +146,54 @@ class CartResource(Resource):
             db.session.delete(check_cart)
             db.session.commit()
 
-            return {'status': 'Prodcut Deleted from Cart'}, 200, {'Content-Type': 'application/json'}
+            return {'status': 'Product Deleted from Cart'}, 200, {'Content-Type': 'application/json'}
 
     def patch(self):
         return 'Not yet implemented', 501
 
-# class ClientList(Resource):
+class CartList(Resource):
 
-#     def __init__(self):
-#         pass
+    def __init__(self):
+        pass
 
-#     @jwt_required
-#     @internal_required
-#     def get(self):
-#         parser = reqparse.RequestParser()
-#         parser.add_argument('p', type=int, location='args', default=1)
-#         parser.add_argument('rp', type=int, location='args', default=25)
-#         parser.add_argument('client_id', type=int, location='args')
-#         parser.add_argument('status', type=inputs.boolean, location='args', choices=(True, False))
-#         parser.add_argument('orderby', location='args', choices=('client_id', 'status'))
-#         parser.add_argument('sort', location='args', choices=('asc', 'desc'))
-#         args = parser.parse_args()
+    def options(self):
+        return {'Status': 'OK'}, 200
 
-#         offset = (args['p'] * args['rp']) - args['rp']
+    @jwt_required
+    @buyer_required
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('p', type=int, location='args', default=1)
+        parser.add_argument('rp', type=int, location='args', default=25)
+        parser.add_argument('product_id', type=int, location='args')
+        parser.add_argument('orderby', location='args', choices=('price', 'qty'))
+        parser.add_argument('sort', location='args', choices=('asc', 'desc'))
+        args = parser.parse_args()
 
-#         qry = Cart.query
+        offset = (args['p'] * args['rp']) - args['rp']
 
-#         if args['status'] is not None:
-#             qry = qry.filter_by(status=args['status'])
+        qry = Cart.query
 
-#         if args['orderby'] is not None:
-#             if args['orderby'] == 'client_id':
-#                 if args['sort'] == 'desc':
-#                     qry = qry.order_by(desc(Clients.client_id)) # bisa gini
-#                 else:
-#                     qry = qry.order_by((Clients.client_id))
-#             elif args['orderby'] == 'status':
-#                 if args['sort'] == 'desc':
-#                     qry = qry.order_by((Clients.client_id).desc()) # bisa juga gini   
-#                 else:
-#                     qry = qry.order_by((Clients.client_id))
+        if args['product_id'] is not None:
+            qry = qry.filter_by(product_id=args['product_id'])
 
-#         rows = []
-#         for row in qry.limit(args['rp']).offset(offset).all():
-#             rows.append(marshal(row, Clients.response_fields))
-#         return rows, 200, {'Content-Type': 'application/json'}
+        if args['orderby'] is not None:
+            if args['orderby'] == 'price':
+                if args['sort'] == 'desc':
+                    qry = qry.order_by(desc(Cart.price)) # bisa gini
+                else:
+                    qry = qry.order_by((Cart.price))
+            elif args['orderby'] == 'qty':
+                if args['sort'] == 'desc':
+                    qry = qry.order_by((Cart.qty).desc()) # bisa juga gini   
+                else:
+                    qry = qry.order_by((Cart.qty))
 
-# api.add_resource(ClientList, '')
+        rows = []
+        for row in qry.limit(args['rp']).offset(offset).all():
+            rows.append(marshal(row, Cart.response_fields))
+        return rows, 200, {'Content-Type': 'application/json'}
+
+api.add_resource(CartList, '/all')
 api.add_resource(CartResource, '')
 
