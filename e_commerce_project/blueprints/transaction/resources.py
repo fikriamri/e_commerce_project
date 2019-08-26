@@ -6,7 +6,7 @@ from blueprints.buyer_details.model import BuyerDetails
 from blueprints.cart.model import Cart
 from blueprints.product.model import Product
 from sqlalchemy import desc
-from blueprints import app, db, internal_required, buyer_required
+from blueprints import app, db, seller_required, buyer_required
 from flask_jwt_extended import jwt_required, get_jwt_claims
 
 bp_transaction = Blueprint('transaction', __name__)
@@ -17,11 +17,13 @@ class TransactionResource(Resource):
     def __init__(self):
         pass
 
+    ## Options function needed to make interaction between react and api successfull
     def options(self):
         return {'Status': 'OK'}, 200
 
+    ## Buyer function to get transaction
     @jwt_required
-    @internal_required
+    @buyer_required
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
@@ -32,29 +34,29 @@ class TransactionResource(Resource):
 
         offset = (args['p'] * args['rp']) - args['rp']
 
-        # Untuk mendapatkan id dari seller yang sedang login
         claims = get_jwt_claims()
         buyer = marshal(BuyerDetails.query.filter_by(client_id=claims['client_id']).first(), BuyerDetails.response_fields)
 
-        qry = Transaction.query.filter_by(buyer_id=buyer['id'])
+        transaction = Transaction.query.filter_by(buyer_id=buyer['id'])
         
         if args['orderby'] is not None:
             if args['orderby'] == 'total_qty':
                 if args['sort'] == 'desc':
-                    qry = qry.order_by(desc(Transaction.total_qty)) # bisa gini
+                    transaction = transaction.order_by(desc(Transaction.total_qty)) # bisa gini
                 else:
-                    qry = qry.order_by((Transaction.total_qty))
+                    transaction = transaction.order_by((Transaction.total_qty))
             elif args['orderby'] == 'total_price':
                 if args['sort'] == 'desc':
-                    qry = qry.order_by((Transaction.total_price).desc()) # bisa juga gini   
+                    transaction = transaction.order_by((Transaction.total_price).desc()) # bisa juga gini   
                 else:
-                    qry = qry.order_by((Transaction.total_price))
+                    transaction = transaction.order_by((Transaction.total_price))
 
         rows = []
-        for row in qry.limit(args['rp']).offset(offset).all():
+        for row in transaction.limit(args['rp']).offset(offset).all():
             rows.append(marshal(row, Transaction.response_fields))
         return rows, 200, {'Content-Type': 'application/json'}
 
+    ## Buyer function for checkout
     @jwt_required
     @buyer_required
     def post(self):
@@ -65,49 +67,47 @@ class TransactionResource(Resource):
 
         claims = get_jwt_claims()
 
-        # untuk mendapatkan data buyer
+        # get buyer information
         buyer = marshal(BuyerDetails.query.filter_by(client_id=claims['client_id']).first(), BuyerDetails.response_fields)
 
-        # untuk mengecek apakah cart kosong atau tidak
+        # Check whether cart empty or not
         check_cart = Cart.query.filter_by(buyer_id=buyer['id'])
-        
         if check_cart.first() is None:
-            return {'status': 'Cart Empty!'}, 200, {'Content-Type': 'application/json'}
+            return {'status': 'Cart Empty!'}, 404, {'Content-Type': 'application/json'}
         elif check_cart is not None:
-            # variable untuk menyimpan data product yang kurang
+            # Variable for storing information about product that its stock is less than qty wanted by buyer
             stock_less = []
-            # untuk mengecek apakah stock product yang akan dicheckout mencukupi atau tidak
+            # Check whether product stock enough or not for qty wanted by buyer
             for row in check_cart.all():
                 row_contain = marshal(row, Cart.response_fields)
                 product = marshal(Product.query.filter_by(id=row_contain['product_id']).first(), Product.response_fields)
                 if row_contain['qty'] > product['stock']:
                     stock_less.append({'product_id': product['id'], 'product_name': product['product_name'], 'stock': product['stock']})
 
-            # Conditional apabila stock less tidak kosong
+            # Conditional covering one or more product stock is less than qty wanted
             if stock_less != []:
-                return {'status': 'checkout failed because stock not available', 'stock_available': stock_less}
+                return {'status': 'checkout failed because stock not available', 'stock_available': stock_less}, 400
             else:
                 transaction = Transaction(buyer['id'], buyer['name'], 0, 0, data['courier'], data['payment_method'])
                 db.session.add(transaction)
                 db.session.commit()
-                # untuk mendapatkan id dari transaksi yang baru dibuat
+                # get transaction id 
                 transaction_contain = marshal(transaction, Transaction.response_fields)
 
-                # Untuk menghitung total qty dan total price yang nantinya akan ditambahkan ke table transaction
+                # variable for storing total qty and total price that will be submitted to transaction table
                 total_qty = 0
                 total_price = 0
+
                 for row in check_cart.all():
-                    # Untuk memasukan barang dari cart ke transaction details
+                    # moving product from cart to transaction details
                     row_contain = marshal(row, Cart.response_fields)
                     transaction_details = TransactionDetails(transaction_contain['id'], row_contain['product_id'], row_contain['product_name'], row_contain['price'], row_contain['qty'])
                     db.session.add(transaction_details)
                     db.session.commit()
-                    # Untuk mendapatkan total qty
                     total_qty += int(row_contain['qty'])
-                    # Untuk mendapatkan total price
                     total_price += int(row_contain['qty']) * int(row_contain['price'])
 
-                    # Untuk mengurangi product stock dengan product yang dicheckout
+                    # substract product stock by qty checked out product
                     product_contain = marshal(Product.query.filter_by(id=row_contain['product_id']).first(), Product.response_fields)
                     product = Product.query.get(row_contain['product_id'])
                     product.id = product_contain['id']
@@ -122,13 +122,13 @@ class TransactionResource(Resource):
                     product.sold = int(product_contain['sold']) + int(row_contain['qty'])
                     db.session.commit()
 
-                    # Untuk menghapus barang dari cart
+                    # erase product from cart
                     product_in_cart = Cart.query.filter_by(product_id=row_contain['product_id'])
                     product_in_cart = product_in_cart.filter_by(buyer_id=buyer['id']).first()
                     db.session.delete(product_in_cart)
                     db.session.commit()
 
-                # Menginput ulang di transaction untuk memasukan total qty dan total price
+                # reinput transaction with new total qty and total prince
                 transaction.id = transaction_contain['id']
                 transaction.buyer_id = transaction_contain['buyer_id']
                 transaction.buyer_name = transaction_contain['buyer_name']

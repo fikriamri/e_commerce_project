@@ -4,7 +4,7 @@ from .model import Cart
 from blueprints.product.model import Product
 from blueprints.buyer_details.model import BuyerDetails
 from sqlalchemy import desc
-from blueprints import app, db, internal_required, buyer_required
+from blueprints import app, db, seller_required, buyer_required
 from flask_jwt_extended import jwt_required, get_jwt_claims
 
 bp_cart = Blueprint('cart', __name__)
@@ -15,14 +15,16 @@ class CartResource(Resource):
     def __init__(self):
         pass
 
+    ## Options function needed to make interaction between react and api successfull
     def options(self):
         return {'Status': 'OK'}, 200
 
+    ## Function to get cart data by product id
     @jwt_required
     @buyer_required
     def get(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('product_id', location='json', required=True)
+        parser.add_argument('product_id', location='args', required=True)
         data = parser.parse_args()
 
         claims = get_jwt_claims()
@@ -37,6 +39,7 @@ class CartResource(Resource):
         elif check_cart is not None:
             return marshal(check_cart, Cart.response_fields), 200, {'Content-Type': 'application/json'}
 
+    ## Function for add product to cart
     @jwt_required
     @buyer_required
     def post(self):
@@ -53,8 +56,9 @@ class CartResource(Resource):
         check_cart = Cart.query.filter_by(product_id=data['product_id'])
         check_cart = check_cart.filter_by(buyer_id=buyer['id']).first()
         
+        ## Check whether product already in cart for signed in buyer
         if check_cart is None:
-            # Mengecek apakah stok barang tersedia sesuai qty yang diinginkan atau tidak
+            ## Check whether product stock available or not
             if int(data['qty']) <= product['stock']:
                 add_to_cart = Cart(buyer['id'], buyer['name'], data['product_id'], product['product_name'], product['price'], data['qty'])
                 db.session.add(add_to_cart)
@@ -65,23 +69,22 @@ class CartResource(Resource):
                 return {'status': 'stock available only '+ str(product['stock'])}
         elif check_cart is not None:
             check_cart_contain = marshal(check_cart, Cart.response_fields)
-            # Menjumlahkan qty sebelumnya dengan qty yang diinput buyer
+            # Sum previous qty with new qty inputted
             qty = check_cart_contain['qty'] + int(data['qty'])
-            # Mengecek apakah stok barang tersedia sesuai qty yang diinginkan atau tidak
+            ## Check whether product stock available or not
             if qty <= product['stock']:
-                # Mendapatkan query dengan id sesuai check_cart
-                qry = Cart.query.get(check_cart_contain['id'])
-                qry.buyer_id = check_cart_contain['buyer_id']
-                qry.buyer_name = check_cart_contain['buyer_name']
-                qry.product_id = check_cart_contain['product_id']
-                qry.price = check_cart_contain['price']
-                qry.qty = qty
+                cart = Cart.query.get(check_cart_contain['id'])
+                cart.buyer_id = check_cart_contain['buyer_id']
+                cart.buyer_name = check_cart_contain['buyer_name']
+                cart.product_id = check_cart_contain['product_id']
+                cart.price = check_cart_contain['price']
+                cart.qty = qty
                 db.session.commit()
-
-                return marshal(qry, Cart.response_fields), 200, {'Content-Type': 'application/json'}
+                return marshal(cart, Cart.response_fields), 200, {'Content-Type': 'application/json'}
             else:
-                return {'status': 'stock available only '+ str(product['stock'])}
+                return {'status': 'stock available only '+ str(product['stock'])}, 400, {'Content-Type': 'application/json'}
 
+    ## Function for updating qty product in cart
     @jwt_required
     @buyer_required
     def put(self):
@@ -99,7 +102,7 @@ class CartResource(Resource):
         check_cart = check_cart.filter_by(buyer_id=buyer['id']).first()
         
         if check_cart is None:
-            # Mengecek apakah stok barang tersedia sesuai qty yang diinginkan atau tidak
+            ## Check whether product stock available or not
             if int(data['qty']) <= product['stock']:
                 add_to_cart = Cart(buyer['id'], buyer['name'], data['product_id'], product['product_name'], product['price'], data['qty'])
                 db.session.add(add_to_cart)
@@ -112,25 +115,24 @@ class CartResource(Resource):
             # Mengecek apakah stok barang tersedia sesuai qty yang diinginkan atau tidak
             if int(data['qty']) <= product['stock']:
                 check_cart_contain = marshal(check_cart, Cart.response_fields)
-                # Mendapatkan query dengan id sesuai check_cart
-                qry = Cart.query.get(check_cart_contain['id'])
-                qry.buyer_id = check_cart_contain['buyer_id']
-                qry.buyer_name = check_cart_contain['buyer_name']
-                qry.product_id = check_cart_contain['product_id']
-                qry.price = check_cart_contain['price']
-                # Menyesuaikan dengan inputan user
-                qry.qty = data['qty']
+                cart = Cart.query.get(check_cart_contain['id'])
+                cart.buyer_id = check_cart_contain['buyer_id']
+                cart.buyer_name = check_cart_contain['buyer_name']
+                cart.product_id = check_cart_contain['product_id']
+                cart.price = check_cart_contain['price']
+                cart.qty = data['qty']
                 db.session.commit()
 
-                return marshal(qry, Cart.response_fields), 200, {'Content-Type': 'application/json'}
+                return marshal(cart, Cart.response_fields), 200, {'Content-Type': 'application/json'}
             else:
                 return {'status': 'stock available only '+ str(product['stock'])}
 
+    ## Function for delete product in cart
     @jwt_required
     @buyer_required
     def delete(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('product_id', location='json', required=True)
+        parser.add_argument('product_id', location='args', required=True)
         data = parser.parse_args()
 
         claims = get_jwt_claims()
@@ -156,9 +158,11 @@ class CartList(Resource):
     def __init__(self):
         pass
 
+    ## Options function needed to make interaction between react and api successfull
     def options(self):
         return {'Status': 'OK'}, 200
 
+    ## Function for get all product in cart
     @jwt_required
     @buyer_required
     def get(self):
@@ -172,25 +176,25 @@ class CartList(Resource):
 
         offset = (args['p'] * args['rp']) - args['rp']
 
-        qry = Cart.query
+        cart = Cart.query
 
         if args['product_id'] is not None:
-            qry = qry.filter_by(product_id=args['product_id'])
+            cart = cart.filter_by(product_id=args['product_id'])
 
         if args['orderby'] is not None:
             if args['orderby'] == 'price':
                 if args['sort'] == 'desc':
-                    qry = qry.order_by(desc(Cart.price)) # bisa gini
+                    cart = cart.order_by(desc(Cart.price)) # bisa gini
                 else:
-                    qry = qry.order_by((Cart.price))
+                    cart = cart.order_by((Cart.price))
             elif args['orderby'] == 'qty':
                 if args['sort'] == 'desc':
-                    qry = qry.order_by((Cart.qty).desc()) # bisa juga gini   
+                    cart = cart.order_by((Cart.qty).desc()) # bisa juga gini   
                 else:
-                    qry = qry.order_by((Cart.qty))
+                    cart = cart.order_by((Cart.qty))
 
         rows = []
-        for row in qry.limit(args['rp']).offset(offset).all():
+        for row in cart.limit(args['rp']).offset(offset).all():
             rows.append(marshal(row, Cart.response_fields))
         return rows, 200, {'Content-Type': 'application/json'}
 

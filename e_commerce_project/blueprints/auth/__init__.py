@@ -10,29 +10,32 @@ api = Api(bp_auth)
 ### Resources
 class CreateTokenResources(Resource):
 
+    ## Options function needed to make interaction between react and api successfull
     def options(self):
         return {'Status': 'OK'}, 200
 
+    ## Function for get token for signin purpose
     def post(self):
-        ## Create token
         parser = reqparse.RequestParser()
         parser.add_argument('client_key', type=str, location='json', required=True)
         parser.add_argument('client_secret', type=str, location='json', required= True)
         args = parser.parse_args()
 
-        qry = Clients.query
+        clients = Clients.query
 
-        qry = qry.filter_by(client_key=args['client_key'])
-        qry = qry.filter_by(client_secret=args['client_secret']).first()
+        clients = clients.filter_by(client_key=args['client_key'])
+        clients = clients.filter_by(client_secret=args['client_secret']).first()
         
-        if qry is not None:
-            client_data= marshal(qry, Clients.response_fields)
+        ## Check whether client_key that user input is listed in database
+        if clients is not None:
+            client_data= marshal(clients, Clients.response_fields)
             client_data.pop("client_secret")
             token = create_access_token(identity=args['client_key'], user_claims=client_data)
         else:
             return {'status': 'UNATHORIZED', 'message': 'invalid key or secret'}, 401
         return {'status': 'oke',  'token': token}, 200
 
+    ## Function for get user information based on token
     @jwt_required
     def get(self):
         claims = get_jwt_claims()
@@ -40,9 +43,11 @@ class CreateTokenResources(Resource):
 
 class RefreshTokenResources(Resource):
 
+    ## Options function needed to make interaction between react and api successfull
     def options(self):
         return {'Status': 'OK'}, 200
     
+    ## Function for get newer token before previous token expired
     @jwt_required
     def post(self):
         current_user = get_jwt_identity()

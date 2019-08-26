@@ -2,7 +2,7 @@ from flask import Blueprint
 from flask_restful import Resource, Api, reqparse, marshal, inputs
 from .model import ProductCategory
 from sqlalchemy import desc
-from blueprints import app, db, internal_required
+from blueprints import app, db, seller_required
 from flask_jwt_extended import jwt_required
 
 bp_product_category = Blueprint('product_category', __name__)
@@ -13,28 +13,32 @@ class ProductCategoryResource(Resource):
     def __init__(self):
         pass
 
+    ## Options function needed to make interaction between react and api successfull
     def options(self):
         return {'Status': 'OK'}, 200
     
+    ## Seller function for get product category by id
     @jwt_required
-    @internal_required
-    def get(self, id): # get by id
-        qry = ProductCategory.query.get(id)
-        if qry is not None:
-            return marshal(qry, ProductCategory.response_fields), 200, {'Content-Type': 'application/json'}
+    @seller_required
+    def get(self, id):
+        product_category = ProductCategory.query.get(id)
+        if product_category is not None:
+            return marshal(product_category, ProductCategory.response_fields), 200, {'Content-Type': 'application/json'}
         return {'status': 'Category Not Found'}, 404, {'Content-Type': 'application/json'}
 
+    ## Seller function for add product category
     @jwt_required
-    @internal_required
+    @seller_required
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('category_name', location='json', required=True)
         parser.add_argument('description', location='json', required=True)
         data = parser.parse_args()
 
-        qry = ProductCategory.query.filter_by(category_name=data['category_name']).first()  
-        if qry is not None:
-            return {'status': 'Category_name already existed! Please choose different category_name!'}, 404, {'Content-Type': 'application/json'}
+        ## Check whether category name already existed in database
+        product_category = ProductCategory.query.filter_by(category_name=data['category_name']).first()  
+        if product_category is not None:
+            return {'status': 'Category_name already existed! Please choose different category_name!'}, 500, {'Content-Type': 'application/json'}
         
         product_category = ProductCategory(data['category_name'], data['description'])
         db.session.add(product_category)
@@ -44,36 +48,40 @@ class ProductCategoryResource(Resource):
 
         return marshal(product_category, ProductCategory.response_fields), 200, {'Content-Type': 'application/json'}
 
+    ## Seller function for edit product category by id
     @jwt_required
-    @internal_required
+    @seller_required
     def put(self, id):
         parser = reqparse.RequestParser()
         parser.add_argument('category_name', location='json', required=True)
         parser.add_argument('description', location='json', required=True)
         args = parser.parse_args()
 
-        qry = ProductCategory.query.get(id)
-        if qry is None:
+        ## Check whether category existed
+        product_category = ProductCategory.query.get(id)
+        if product_category is None:
             return {'status': 'Category Not Found'}, 404, {'Content-Type': 'application/json'}
 
-        check_qry = ProductCategory.query.filter_by(category_name=args['category_name']).first()
-        if check_qry is not None:
-            return {'status': 'Category_name already existed! Please choose different category_name!'}, 404, {'Content-Type': 'application/json'}
+        ## Check whether category name already existed
+        check_product_category = ProductCategory.query.filter_by(category_name=args['category_name']).first()
+        if check_product_category is not None:
+            return {'status': 'Category_name already existed! Please choose different category_name!'}, 500, {'Content-Type': 'application/json'}
 
-        qry.category_name = args['category_name']
-        qry.description = args['description']
+        product_category.category_name = args['category_name']
+        product_category.description = args['description']
         db.session.commit()
 
-        return marshal(qry, ProductCategory.response_fields), 200, {'Content-Type': 'application/json'}
+        return marshal(product_category, ProductCategory.response_fields), 200, {'Content-Type': 'application/json'}
 
+    ## Seller function for delete product category by id
     @jwt_required
-    @internal_required
+    @seller_required
     def delete(self, id):
-        qry = ProductCategory.query.get(id)
-        if qry is None:
+        product_category = ProductCategory.query.get(id)
+        if product_category is None:
             return {'status': 'Category Not Found'}, 404, {'Content-Type': 'application/json'}
 
-        db.session.delete(qry)
+        db.session.delete(product_category)
         db.session.commit()
 
         return {'status': 'Category Deleted'}, 200, {'Content-Type': 'application/json'}
@@ -86,11 +94,13 @@ class ProductCategoryList(Resource):
     def __init__(self):
         pass
 
+    ## Options function needed to make interaction between react and api successfull
     def options(self):
         return {'Status': 'OK'}, 200
 
+    ## Seller function for get all product category listed in database
     @jwt_required
-    @internal_required
+    @seller_required
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
@@ -100,16 +110,16 @@ class ProductCategoryList(Resource):
 
         offset = (args['p'] * args['rp']) - args['rp']
 
-        qry = ProductCategory.query
+        product_category = ProductCategory.query
 
         if args['category_name'] is not None:
-            qry = qry.filter_by(category_name=args['category_name'])  
+            product_category = product_category.filter_by(category_name=args['category_name'])  
 
         rows = []
-        for row in qry.limit(args['rp']).offset(offset).all():
+        for row in product_category.limit(args['rp']).offset(offset).all():
             rows.append(marshal(row, ProductCategory.response_fields))
         return rows, 200, {'Content-Type': 'application/json'}
 
-api.add_resource(ProductCategoryList, '')
+api.add_resource(ProductCategoryList, '/all')
 api.add_resource(ProductCategoryResource, '', '/<id>')
 

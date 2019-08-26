@@ -22,9 +22,8 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=1)
 
 jwt = JWTManager(app)
 
-# Perlu diedit
-# Buat Decorator untuk internal only
-def internal_required(fn):
+# Decorator for seller
+def seller_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         verify_jwt_in_request()
@@ -35,8 +34,7 @@ def internal_required(fn):
             return fn(*args, **kwargs)
     return wrapper
 
-# Perlu diedit
-# Buat Decorator untuk client-public
+# Decorator for buyer
 def buyer_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
@@ -80,8 +78,6 @@ def after_request(response):
 
 
 # import blueprints
-
-# perlu diedit sesuai kebutuhan
 from blueprints.clients.resources import bp_client
 from blueprints.auth import bp_auth
 from blueprints.product_category.resources import bp_product_category

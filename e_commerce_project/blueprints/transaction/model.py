@@ -22,7 +22,8 @@ class Transaction(db.Model):
         'total_qty': fields.Integer,
         'total_price': fields.Integer,
         'courier': fields.String,
-        'payment_method': fields.String
+        'payment_method': fields.String,
+        'date_created': fields.DateTime
     }
 
     def __init__(self, buyer_id, buyer_name, total_qty, total_price, courier, payment_method):
