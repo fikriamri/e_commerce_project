@@ -49,7 +49,8 @@ def buyer_required(fn):
 
 ## Setting Database
 app.config['APP_DEBUG'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://fikriamri:threecheers@127.0.0.1:3306/e_commerce_project' # localhost aka 127.0.0.1
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://admin:Altabatch3@e-commerce-project.cvz8vemwkkzi.ap-southeast-1.rds.amazonaws.com:3306/e_commerce_project'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://fikriamri:threecheers@127.0.0.1:3306/e_commerce_project' # localhost aka 127.0.0.1
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
