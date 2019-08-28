@@ -176,7 +176,11 @@ class CartList(Resource):
 
         offset = (args['p'] * args['rp']) - args['rp']
 
-        cart = Cart.query
+        claims = get_jwt_claims()
+
+        buyer = marshal(BuyerDetails.query.filter_by(client_id=claims['client_id']).first(), BuyerDetails.response_fields)
+
+        cart = Cart.query.filter_by(buyer_id=buyer['id'])
 
         if args['product_id'] is not None:
             cart = cart.filter_by(product_id=args['product_id'])
