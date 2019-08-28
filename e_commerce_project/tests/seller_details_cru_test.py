@@ -23,7 +23,7 @@ class TestSellerDetailsCrud():
 ######### post
 
     def test_seller_sign_up(self, client):
-        random_number = random.random() * 100
+        random_number = int(random.random() * 100)
         data = {
             "client_key": "Seller Tes " + str(random_number),
             "client_secret": "passwordseller" + str(random_number),
