@@ -2,14 +2,15 @@ sudo: required
 language: generic
 services:
 - docker
+- npm
 os:
 - linux
 env:
   global:
-  - DOCKER_IMAGE_NAME="helloworld"
+  - DOCKER_IMAGE_NAME="e-commerce-backend"
   - DOCKER_HUB_ORG="fikriamri"
 before_script:
-- openssl aes-256-cbc -K $encrypted_6d1049fb5328_key -iv $encrypted_6d1049fb5328_iv
+- openssl aes-256-cbc -K $encrypted_a28ddf56acd5_key -iv $encrypted_a28ddf56acd5_iv
   -in deploy_rsa.enc -out deploy_rsa -d
 - eval "$(ssh-agent -s)"
 - chmod 600 deploy_rsa
@@ -24,10 +25,12 @@ after_script:
   .
 - docker push ${DOCKER_HUB_ORG}/${DOCKER_IMAGE_NAME}:production-${TRAVIS_BUILD_ID}
 - docker tag ${DOCKER_HUB_ORG}/${DOCKER_IMAGE_NAME}:production-${TRAVIS_BUILD_ID}
-  ${DOCKER_USERNAME}/${DOCKER_IMAGE_NAME}:latest
-- docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" && docker push ${DOCKER_HUB_ORG}/${DOCKER_IMAGE_NAME}:latest
+  ${DOCKER_USERNAME}/${DOCKER_IMAGE_NAME}:v.1
+- docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" && docker push ${DOCKER_HUB_ORG}/${DOCKER_IMAGE_NAME}:v.1
 - ssh-keyscan -H $SSH_IP >> ~/.ssh/known_hosts
 - ssh -v -i deploy_rsa $SSH_USER@$SSH_IP DIR=$ROOT_DIR 'bash -s' < deploy.sh
 before_install:
-- openssl aes-256-cbc -K $encrypted_6d1049fb5328_key -iv $encrypted_6d1049fb5328_iv
+- openssl aes-256-cbc -K $encrypted_d708cd8a3f20_key -iv $encrypted_d708cd8a3f20_iv
+  -in deploy_rsa.enc -out deploy_rsa -d
+- openssl aes-256-cbc -K $encrypted_a28ddf56acd5_key -iv $encrypted_a28ddf56acd5_iv
   -in deploy_rsa.enc -out deploy_rsa -d
