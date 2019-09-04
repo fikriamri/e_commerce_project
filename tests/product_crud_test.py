@@ -6,50 +6,7 @@ class TestProductCrud():
 
     product_id = 0
 
-######### get list (public)
-    def test_product_list(self, client):
-        res = client.get('/product/all')
-        
-        res_json=json.loads(res.data)
-        assert res.status_code == 200
 
-    def test_product_list_buyer(self, client):
-        token = create_token_buyer()
-        res = client.get('/product/all',
-                        headers={'Authorization': 'Bearer ' + token})
-        
-        res_json=json.loads(res.data)
-        assert res.status_code == 200
-
-######### get list (seller)
-    def test_product_list_seller(self, client):
-        token = create_token_seller()
-        res = client.get('/product/list',
-                        headers={'Authorization': 'Bearer ' + token})
-        
-        res_json=json.loads(res.data)
-        assert res.status_code == 200
-
-    def test_product_invalid_list_seller(self, client):
-        token = create_token_buyer()
-        res = client.get('/product/all',
-                        headers={'Authorization': 'Bearer ' + token})
-        
-        res_json=json.loads(res.data)
-        assert res.status_code == 200
-
-# ######### get by id (public)
-    def test_product_get(self, client):
-        res = client.get('/product?product_id=1')
-        
-        res_json=json.loads(res.data)
-        assert res.status_code == 200
-
-    def test_product_invalid_get(self, client):
-        res = client.get('/product?product_id=1000')
-        
-        res_json=json.loads(res.data)
-        assert res.status_code == 404
 
 # ######### post
 
@@ -127,6 +84,51 @@ class TestProductCrud():
 
         res_json=json.loads(res.data)
         assert res.status_code == 400
+
+######### get list (public)
+    def test_product_list(self, client):
+        res = client.get('/product/all')
+        
+        res_json=json.loads(res.data)
+        assert res.status_code == 200
+
+    def test_product_list_buyer(self, client):
+        token = create_token_buyer()
+        res = client.get('/product/all',
+                        headers={'Authorization': 'Bearer ' + token})
+        
+        res_json=json.loads(res.data)
+        assert res.status_code == 200
+
+######### get list (seller)
+    def test_product_list_seller(self, client):
+        token = create_token_seller()
+        res = client.get('/product/list',
+                        headers={'Authorization': 'Bearer ' + token})
+        
+        res_json=json.loads(res.data)
+        assert res.status_code == 200
+
+    def test_product_invalid_list_seller(self, client):
+        token = create_token_buyer()
+        res = client.get('/product/all',
+                        headers={'Authorization': 'Bearer ' + token})
+        
+        res_json=json.loads(res.data)
+        assert res.status_code == 200
+
+# ######### get by id (public)
+    def test_product_get(self, client):
+        res = client.get('/product?product_id=1')
+        
+        res_json=json.loads(res.data)
+        assert res.status_code == 200
+
+    def test_product_invalid_get(self, client):
+        res = client.get('/product?product_id=1000')
+        
+        res_json=json.loads(res.data)
+        assert res.status_code == 404
 
 #########  soft delete
     def test_product_soft_delete(self, client):

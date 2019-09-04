@@ -37,5 +37,5 @@ class SellerDetails(db.Model):
         self.postal_code = postal_code
         self.client_id = client_id
 
-    def __repr__(self):
-        return '<User %r>' % self.id
+    # def __repr__(self):
+    #     return '<User %r>' % self.id

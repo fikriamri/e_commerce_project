@@ -52,11 +52,41 @@ class TestCartCrud():
 
         assert res.status_code == 200
 
-    def test_cart_invalid_input(self, client):
+    def test_cart_input3(self, client):
+        token = create_token_buyer()
+        data = {
+            "product_id": 2,
+            "qty": 1
+        }
+        res=client.post('/cart', 
+                        headers={'Authorization': 'Bearer ' + token},
+                        data=json.dumps(data),
+                        content_type='application/json')
+
+        res_json=json.loads(res.data)
+
+        assert res.status_code == 200
+
+    def test_cart_invalid_input1(self, client):
         token = create_token_buyer()
         data = {
             "product_id": 1,
             "qty": 100
+        }
+        res=client.post('/cart', 
+                        headers={'Authorization': 'Bearer ' + token},
+                        data=json.dumps(data),
+                        content_type='application/json')
+
+        res_json=json.loads(res.data)
+
+        assert res.status_code == 400
+
+    def test_cart_invalid_input2(self, client):
+        token = create_token_buyer()
+        data = {
+            "product_id": 2,
+            "qty": 500
         }
         res=client.post('/cart', 
                         headers={'Authorization': 'Bearer ' + token},

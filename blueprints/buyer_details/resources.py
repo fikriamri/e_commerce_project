@@ -32,6 +32,10 @@ class BuyerSignUp(Resource):
         parser.add_argument('postal_code', location='json', required=True)
         data = parser.parse_args()
 
+        check_client_key = Clients.query.filter_by(client_key=data['client_key']).first()
+        if check_client_key is not None:
+            return {'status': 'Username already taken!'}, 500, {'Content-Type': 'application/json'}
+        
         ## status have to False for buyer account
         client = Clients(data['client_key'], data['client_secret'], False)
         db.session.add(client)

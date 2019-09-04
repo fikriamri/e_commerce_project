@@ -66,7 +66,7 @@ class CartResource(Resource):
                 app.logger.debug('DEBUG : %s', add_to_cart)
                 return marshal(add_to_cart, Cart.response_fields), 200, {'Content-Type': 'application/json'}
             else:
-                return {'status': 'stock available only '+ str(product['stock'])}
+                return {'status': 'stock available only '+ str(product['stock'])}, 400, {'Content-Type': 'application/json'}
         elif check_cart is not None:
             check_cart_contain = marshal(check_cart, Cart.response_fields)
             # Sum previous qty with new qty inputted
@@ -110,7 +110,7 @@ class CartResource(Resource):
                 app.logger.debug('DEBUG : %s', add_to_cart)
                 return marshal(add_to_cart, Cart.response_fields), 200, {'Content-Type': 'application/json'}
             else:
-                return {'status': 'stock available only '+ str(product['stock'])}
+                return {'status': 'stock available only '+ str(product['stock'])}, 400, {'Content-Type': 'application/json'}
         elif check_cart is not None:
             # Mengecek apakah stok barang tersedia sesuai qty yang diinginkan atau tidak
             if int(data['qty']) <= product['stock']:
@@ -125,7 +125,7 @@ class CartResource(Resource):
 
                 return marshal(cart, Cart.response_fields), 200, {'Content-Type': 'application/json'}
             else:
-                return {'status': 'stock available only '+ str(product['stock'])}
+                return {'status': 'stock available only '+ str(product['stock'])}, 400, {'Content-Type': 'application/json'}
 
     ## Function for delete product in cart
     @jwt_required

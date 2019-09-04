@@ -23,7 +23,7 @@ class TestSellerDetailsCrud():
 ######### post
 
     def test_seller_sign_up(self, client):
-        random_number = int(random.random() * 100)
+        random_number = int(random.random() * 1000)
         data = {
             "client_key": "Seller Tes " + str(random_number),
             "client_secret": "passwordseller" + str(random_number),
@@ -44,7 +44,7 @@ class TestSellerDetailsCrud():
 
     def test_seller_invalid_sign_up(self, client):
         data = {
-            "client_key": "Seller 1",
+            "client_key": "seller_1",
             "client_secret": "passwordseller2",
             "name": "Seller 3",
             "store_name": "Store 2",

@@ -4,6 +4,15 @@ import random
 
 class TestTransactionDetailsR():
 
+######### options
+    def test_transactions_details_option1(self, client):
+        res = client.options('/transaction_details?transaction_id=2')
+        assert res.status_code == 200
+
+    def test_transactions_details_option2(self, client):
+        res = client.options('/order_details')
+        assert res.status_code == 200
+
 ######### get transaction details (buyer)
     def test_transaction_details_list(self, client):
         token = create_token_buyer()

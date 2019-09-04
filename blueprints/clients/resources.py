@@ -34,6 +34,11 @@ class ClientResource(Resource):
         parser.add_argument('status', type=bool, location='json')
         data = parser.parse_args()
 
+        # check_client_key = Clients.query.filter_by(client_key=data['client_key']).first()
+        check_client_key = Clients.is_exists(data['client_key'])
+        if check_client_key is True:
+            return {'status': 'Username already taken!'}, 500, {'Content-Type': 'application/json'}
+
         client = Clients(data['client_key'], data['client_secret'], data['status'])
         db.session.add(client)
         db.session.commit()
@@ -53,6 +58,9 @@ class ClientResource(Resource):
         claims = get_jwt_claims()
 
         client = Clients.query.get(id)
+
+        if client is None:
+            return {'status': 'Client not found!'}, 500, {'Content-Type': 'application/json'}
 
         client.client_key = args['client_key']
         client.client_secret = args['client_secret']

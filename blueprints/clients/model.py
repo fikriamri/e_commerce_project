@@ -25,3 +25,15 @@ class Clients(db.Model):
 
     def __repr__(self):
         return '<Client %r>' % self.id
+
+    @classmethod
+    def is_exists(cls, data):
+
+        all_data = cls.query.all()
+
+        existing_username = [item.client_key for item in all_data]
+
+        if data in existing_username:
+            return True
+
+        return False

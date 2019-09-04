@@ -8,6 +8,9 @@ from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_claims
 from datetime import timedelta
 from functools import wraps
 from flask_cors import CORS
+from werkzeug.contrib.cache import SimpleCache
+import os
+import config
 
 app = Flask(__name__)
 app.config['APP_DEBUG'] = True
@@ -46,10 +49,21 @@ def buyer_required(fn):
             return fn(*args, **kwargs)
     return wrapper
 
+try:
+    env = os.environ.get('FLASK_ENV', 'development')
+    if env == 'testing':
+        app.config.from_object(config.TestingConfig)
+    else:
+        app.config.from_object(config.DevelopmentConfig)
+
+except Exception as e:
+    raise e
+
+cache = SimpleCache()
 
 ## Setting Database
 app.config['APP_DEBUG'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://admin:Altabatch3@e-commerce-project.cvz8vemwkkzi.ap-southeast-1.rds.amazonaws.com:3306/e_commerce_project'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://admin:Altabatch3@e-commerce-project.cvz8vemwkkzi.ap-southeast-1.rds.amazonaws.com:3306/e_commerce_project'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://fikriamri:threecheers@127.0.0.1:3306/e_commerce_project' # localhost aka 127.0.0.1
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -88,7 +102,7 @@ from blueprints.seller_details.resources import bp_seller_details
 from blueprints.cart.resources import bp_cart
 from blueprints.transaction.resources import bp_transaction
 from blueprints.transaction_details.resources import bp_transaction_details
-
+from blueprints.weather.resources import bp_weather
 
 app.register_blueprint(bp_client, url_prefix='/client')
 app.register_blueprint(bp_auth, url_prefix='/signin')
@@ -99,6 +113,8 @@ app.register_blueprint(bp_seller_details, url_prefix='')
 app.register_blueprint(bp_cart, url_prefix='/cart')
 app.register_blueprint(bp_transaction, url_prefix='')
 app.register_blueprint(bp_transaction_details, url_prefix='')
+app.register_blueprint(bp_weather, url_prefix='/weather')
+
 
 
 db.create_all()

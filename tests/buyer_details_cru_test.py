@@ -1,8 +1,20 @@
 import json
-from . import app, client, cache, create_token_buyer, create_token_seller
+from . import app, client, cache, create_token_buyer, create_token_seller, create_token_invalid
 import random
+from tests import reset_database
 
 class TestBuyerDetailsCrud():
+
+    reset_database()
+
+######### options
+    def test_buyer_option1(self, client):
+        res = client.options('profile')
+        assert res.status_code == 200
+
+    def test_buyer_option2(self, client):
+        res = client.options('signup')
+        assert res.status_code == 200
 
 ######### get profile
     def test_buyer_details_profile(self, client):
@@ -14,7 +26,7 @@ class TestBuyerDetailsCrud():
         assert res.status_code == 200
 
     def test_buyer_details_invalid_profile(self, client):
-        token = create_token_seller()
+        token = create_token_invalid()
         res = client.get('profile', 
                         headers={'Authorization': 'Bearer ' + token})
         res_json=json.loads(res.data)
@@ -23,7 +35,7 @@ class TestBuyerDetailsCrud():
 ######### post
 
     def test_buyer_sign_up(self, client):
-        random_number = int(random.random() * 100)
+        random_number = int(random.random() * 1000)
         data = {
             "client_key": "Buyer Tes " + str(random_number),
             "client_secret": "passwordbuyer" + str(random_number),
@@ -65,7 +77,7 @@ class TestBuyerDetailsCrud():
     def test_buyer_update(self, client):
         token = create_token_buyer()
         data = {
-            "client_key": "buyer_1",
+            "client_key": "buyer_2",
             "client_secret": "buyer1",
             "name": "Buyer 1",
             "email": "buyer1@yahoo.com",

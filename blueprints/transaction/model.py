@@ -34,5 +34,5 @@ class Transaction(db.Model):
         self.courier = courier
         self.payment_method = payment_method
 
-    def __repr__(self):
-        return '<Transaction %r>' % self.id
+    # def __repr__(self):
+    #     return '<Transaction %r>' % self.id

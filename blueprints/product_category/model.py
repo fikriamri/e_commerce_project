@@ -20,5 +20,5 @@ class ProductCategory(db.Model):
         self.category_name = category_name
         self.description = description
 
-    def __repr__(self):
-        return '<Product_Category %r>' % self.id
+    # def __repr__(self):
+    #     return '<Product_Category %r>' % self.id

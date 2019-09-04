@@ -6,9 +6,41 @@ class TestClientCrud():
     client_id = 0
 
 ######### get list
-    def test_client_list(self, client):
+    def test_client_list1(self, client):
         token = create_token_seller()
-        res = client.get('/client',
+        res = client.get('/client?p=1&orderby=client_id',
+                        headers={'Authorization': 'Bearer ' + token})
+        
+        res_json=json.loads(res.data)
+        assert res.status_code == 200
+
+    def test_client_list2(self, client):
+        token = create_token_seller()
+        res = client.get('/client?p=1&orderby=client_id&sort=desc',
+                        headers={'Authorization': 'Bearer ' + token})
+        
+        res_json=json.loads(res.data)
+        assert res.status_code == 200
+
+    def test_client_list3(self, client):
+        token = create_token_seller()
+        res = client.get('/client?p=1&orderby=status',
+                        headers={'Authorization': 'Bearer ' + token})
+        
+        res_json=json.loads(res.data)
+        assert res.status_code == 200
+
+    def test_client_list4(self, client):
+        token = create_token_seller()
+        res = client.get('/client?p=1&orderby=status&sort=desc',
+                        headers={'Authorization': 'Bearer ' + token})
+        
+        res_json=json.loads(res.data)
+        assert res.status_code == 200
+
+    def test_client_list5(self, client):
+        token = create_token_seller()
+        res = client.get('/client?p=1&status=True',
                         headers={'Authorization': 'Bearer ' + token})
         
         res_json=json.loads(res.data)

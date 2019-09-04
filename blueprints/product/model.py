@@ -41,5 +41,5 @@ class Product(db.Model):
         self.stock = stock
         self.sold = sold
 
-    def __repr__(self):
-        return '<Product %r>' % self.id
+    # def __repr__(self):
+    #     return '<Product %r>' % self.id

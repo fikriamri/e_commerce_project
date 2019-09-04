@@ -4,16 +4,45 @@ import random
 
 class TestTransactionCr():
 
+######### options
+    def test_transactions_option1(self, client):
+        res = client.options('/checkout?p=1&orderby=total_qty')
+        assert res.status_code == 200
+
 ######### get list
-    def test_transaction_list(self, client):
+    def test_transaction_list1(self, client):
         token = create_token_buyer()
-        res = client.get('/checkout',
+        res = client.get('/checkout?p=1&orderby=total_qty',
                         headers={'Authorization': 'Bearer ' + token})
         
         res_json=json.loads(res.data)
         assert res.status_code == 200
 
-    def test_transaction_list(self, client):
+    def test_transaction_list2(self, client):
+        token = create_token_buyer()
+        res = client.get('/checkout?p=1&orderby=total_qty&sort=desc',
+                        headers={'Authorization': 'Bearer ' + token})
+        
+        res_json=json.loads(res.data)
+        assert res.status_code == 200
+
+    def test_transaction_list3(self, client):
+        token = create_token_buyer()
+        res = client.get('/checkout?p=1&orderby=total_price&sort=desc',
+                        headers={'Authorization': 'Bearer ' + token})
+        
+        res_json=json.loads(res.data)
+        assert res.status_code == 200
+
+    def test_transaction_list4(self, client):
+        token = create_token_buyer()
+        res = client.get('/checkout?p=1&orderby=total_price',
+                        headers={'Authorization': 'Bearer ' + token})
+        
+        res_json=json.loads(res.data)
+        assert res.status_code == 200
+
+    def test_transaction_invalid_list(self, client):
         token = create_token_seller()
         res = client.get('/checkout',
                         headers={'Authorization': 'Bearer ' + token})

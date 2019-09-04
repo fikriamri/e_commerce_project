@@ -32,5 +32,5 @@ class Cart(db.Model):
         self.price = price
         self.qty = qty
 
-    def __repr__(self):
-        return '<Cart %r>' % self.id
+    # def __repr__(self):
+    #     return '<Cart %r>' % self.id

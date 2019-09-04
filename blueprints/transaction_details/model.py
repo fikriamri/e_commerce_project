@@ -29,5 +29,5 @@ class TransactionDetails(db.Model):
         self.price = price
         self.qty = qty
 
-    def __repr__(self):
-        return '<transactionDetails %r>' % self.id
+    # def __repr__(self):
+    #     return '<transactionDetails %r>' % self.id

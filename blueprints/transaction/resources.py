@@ -63,7 +63,7 @@ class TransactionResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('courier', location='json', required=True)
         parser.add_argument('payment_method', location='json', required=True)
-        data = parser.parse_args()
+        argument = parser.parse_args()
 
         claims = get_jwt_claims()
 
@@ -88,7 +88,7 @@ class TransactionResource(Resource):
             if stock_less != []:
                 return {'status': 'checkout failed because stock not available', 'stock_available': stock_less}, 400
             else:
-                transaction = Transaction(buyer['id'], buyer['name'], 0, 0, data['courier'], data['payment_method'])
+                transaction = Transaction(buyer['id'], buyer['name'], 0, 0, argument['courier'], argument['payment_method'])
                 db.session.add(transaction)
                 db.session.commit()
                 # get transaction id 
